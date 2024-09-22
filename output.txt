@@ -1,0 +1,29 @@
+Predicciones guardadas en C:\xampp\htdocs\Seguridad_Ciudadana\ml_scripts\resultados_predicciones.csv
+Patrones por barrio:
+                 barrio  cantidad  cantidad_pred prediccion_clasificacion_mode
+0          Buenos aires         4       1.106134           accidente laborales
+1               Medrano         3       1.106134                    robo/hurto
+2            Sanvicente         3       1.109247                    robo/hurto
+3                aurora         1       1.137265                    robo/hurto
+4  entrada a sanvicente         1       1.137265                    robo/hurto
+5              palenque         2       1.113917                    robo/hurto
+6                prueba         1       1.071890                    robo/hurto
+
+Patrones por tipo de incidencia:
+       tipo_incidencia  cantidad  cantidad_pred prediccion_clasificacion_mode
+0  accidente laborales         2       1.127926           accidente laborales
+1   accidente transito         1       1.053211                    robo/hurto
+2           emergencia         1       1.137265                    robo/hurto
+3             incendio         1       1.127926           accidente laborales
+4                 otro         1       1.053211                    robo/hurto
+5           robo/hurto         6       1.115473                    robo/hurto
+6           vandalismo         3       1.115473                    robo/hurto
+
+Patrones por barrio guardados en C:\xampp\htdocs\Seguridad_Ciudadana\ml_scripts\patrones_barrios.csv
+Patrones por tipo de incidencia guardados en C:\xampp\htdocs\Seguridad_Ciudadana\ml_scripts\patrones_tipos.csv
+   cantidad_pred tipo_incidencia_pred
+0       1.053211           robo/hurto
+1       1.053211           robo/hurto
+2       1.062550           robo/hurto
+3       1.071890           robo/hurto
+4       1.090568           robo/hurto

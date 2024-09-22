@@ -1,0 +1,8 @@
+barrio,cantidad,cantidad_pred,prediccion_clasificacion_mode
+Buenos aires,121,1.106133840046911,robo/hurto
+Medrano,111,1.106133840046911,robo/hurto
+Sanvicente,111,1.109246951905359,robo/hurto
+aurora,1,1.1372649586313919,robo/hurto
+entrada a sanvicente,1,1.1372649586313919,robo/hurto
+palenque,11,1.1139166196930312,robo/hurto
+prueba,1,1.071889609603982,robo/hurto
