@@ -23,7 +23,7 @@ CORS(app)
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
     # Cargar los datos desde el archivo JSON
-    json_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\datos_incidencias.json'
+    json_path = './ml_scripts/datos_incidencias.json'
     data = pd.read_json(json_path)
 
     # Convertir columnas 'mes' y 'dia' a numéricas
@@ -94,12 +94,11 @@ def entrenar_modelo():
     return predicciones()
 
 def guardar_modelos(model_regresion, model_clasificacion, pca, le, columnas):
-    joblib.dump(model_regresion, 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_regresion.pkl')
-    joblib.dump(model_clasificacion, 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_clasificacion.pkl')
-    joblib.dump(pca, 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_pca.pkl')
-    joblib.dump(le, 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_le.pkl')
-    joblib.dump(columnas, 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\columnas.pkl')
-    
+    joblib.dump(model_regresion, './ml_scripts/modelo_regresion.pkl')
+    joblib.dump(model_clasificacion, './ml_scripts/modelo_clasificacion.pkl')
+    joblib.dump(pca, './ml_scripts/modelo_pca.pkl')
+    joblib.dump(le, './ml_scripts/modelo_le.pkl')
+    joblib.dump(columnas, './ml_scripts/columnas.pkl')
     return jsonify({"mensaje": "Modelo entrenado exitosamente."})
   
 #se obtienes las predicciones basado a los datos de la clasificacion
@@ -107,9 +106,9 @@ def guardar_modelos(model_regresion, model_clasificacion, pca, le, columnas):
 def predicciones():
     # # Cargar los modelos
     # try:
-    #     model_regresion = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_regresion.pkl')
-    #     model_clasificacion = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_clasificacion.pkl')
-    #     le = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_le.pkl')
+    #     model_regresion = joblib.load('./ml_scripts/modelo_regresion.pkl')
+    #     model_clasificacion = joblib.load('./ml_scripts/modelo_clasificacion.pkl')
+    #     le = joblib.load('./ml_scripts/modelo_le.pkl')
     # except FileNotFoundError as e:
     #     return jsonify({"error": str(e)}), 404
 
@@ -117,7 +116,7 @@ def predicciones():
     warnings.filterwarnings("ignore", message="X has feature names, but LinearRegression was fitted without feature names")
 
     # Cargar los datos desde el archivo JSON
-    json_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\datos_incidencias.json'
+    json_path = './ml_scripts/datos_incidencias.json'
     try:
         with open(json_path, 'r') as file:
             data = json.load(file)
@@ -160,7 +159,7 @@ def predicciones():
     df['es_fin_de_semana'] = df['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
 
     # Preparación para el PDF y lo guardamos
-    pdf_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_graficas.pdf'
+    pdf_path = './ml_scripts/reporte_graficas.pdf'
 
     # Crear el archivo PDF de cada gráfica
     with PdfPages(pdf_path) as pdf:
@@ -295,11 +294,12 @@ def predicciones():
     os.startfile(pdf_path)
     # Cargar modelos y PCA
     try:
-        model_regresion = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_regresion.pkl')
-        model_clasificacion = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_clasificacion.pkl')
-        pca = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_pca.pkl')
-        le = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\modelo_le.pkl')
-        columnas = joblib.load('C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\columnas.pkl')
+	joblib.dump(model_regresion, './ml_scripts/modelo_regresion.pkl')
+        joblib.dump(model_clasificacion, './ml_scripts/modelo_clasificacion.pkl')
+        joblib.dump(pca, './ml_scripts/modelo_pca.pkl')
+        joblib.dump(le, './ml_scripts/modelo_le.pkl')
+        joblib.dump(columnas, './ml_scripts/columnas.pkl')
+
     except FileNotFoundError as e:
         print("Modelo no encontrado:", e)
         sys.exit(1)
@@ -319,7 +319,7 @@ def predicciones():
     df['tipo_incidencia_pred'] = le.inverse_transform(model_clasificacion.predict(X_nueva))
 
     # Guardar los resultados en un archivo CSV
-    resultados_csv_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\resultados_predicciones.csv'
+    resultados_csv_path = './ml_scripts/resultados_predicciones.csv'
     df.to_csv(resultados_csv_path, index=False)
     print(f"Predicciones guardadas en {resultados_csv_path}")
 
@@ -351,8 +351,8 @@ def predicciones():
     print(patrones_tipos)
 
 	# Guardar los resultados en archivos CSV para su posterior análisis
-    patrones_barrios_csv_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\patrones_barrios.csv'
-    patrones_tipos_csv_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\patrones_tipos.csv'
+    patrones_barrios_csv_path = './ml_scripts/patrones_barrios.csv'
+    patrones_tipos_csv_path = './ml_scripts/patrones_tipos.csv'
 
     patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
     patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
@@ -365,7 +365,7 @@ def predicciones():
     print(df[['cantidad_pred', 'tipo_incidencia_pred']].head())
 
 	# Preparación para el PDF de las nuevas visualizaciones
-    pdf_predictions_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_predicciones.pdf'
+    pdf_predictions_path = './ml_scripts/reporte_predicciones.pdf'
 
 	# Crear el archivo PDF de cada gráfica
     with PdfPages(pdf_predictions_path) as pdf:
