@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 import pandas as pd
 import joblib
 from sklearn.model_selection import train_test_split
@@ -20,103 +20,92 @@ matplotlib.use('Agg')
 app = Flask(__name__)
 CORS(app)
 base_path = os.path.dirname(__file__)
-# Ruta raíz para la descripción de la API
-@app.route('/')
-def home():
-    return jsonify({
-        "mensaje": "Bienvenido a la API de análisis de incidencias",
-        "endpoints": {
-            "/entrenar_modelo": "Entrena el modelo con los datos actuales",
-            "/predicciones": "Genera predicciones basadas en el modelo entrenado"
-        },
-        "descripcion": "Esta API permite entrenar un modelo de machine learning con datos de incidencias y generar predicciones basadas en ese modelo."
-    })
+
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
-    # Cargar los datos desde el archivo JSON
-    # json_path = './ml_scripts/datos_incidencias.json'
-    json_path = os.path.join(base_path, 'ml_scripts', 'datos_incidencias.json')
     try:
-       datos = pd.read_json(json_path)
-    except FileNotFoundError:
-       return jsonify({"error": f"El archivo {json_path} no existe."}), 404
+         # Cargar los datos desde el archivo JSON
+        # json_path = './ml_scripts/datos_incidencias.json'
+        json_path = os.path.join(base_path, 'datos_incidencias.json')
+        data = pd.read_json(json_path)
 
+        print(base_path)
+        # Convertir columnas 'mes' y 'dia' a numéricas
+        data['mes'] = pd.to_numeric(data['mes'], errors='coerce')
+        data['dia'] = pd.to_numeric(data['dia'], errors='coerce')
 
-    data = pd.read_json(json_path)
+        # Extraer la hora y los minutos desde la columna original
+        data['hora_original'] = data['hora']
+        data['hora'] = data['hora_original'].str.split(':').str[0].astype(int)    # Extraer la hora como entero
+        data['minutos'] = data['hora_original'].str.split(':').str[1].astype(int) # Extraer los minutos como entero
 
-    # Convertir columnas 'mes' y 'dia' a numéricas
-    data['mes'] = pd.to_numeric(data['mes'], errors='coerce')
-    data['dia'] = pd.to_numeric(data['dia'], errors='coerce')
+        # Unificar hora y minutos en una sola columna con formato entero HHMM
+        data['hora_unificada'] = data['hora'] * 100 + data['minutos']
 
-    # Extraer la hora y los minutos desde la columna original
-    data['hora_original'] = data['hora']
-    data['hora'] = data['hora_original'].str.split(':').str[0].astype(int)    # Extraer la hora como entero
-    data['minutos'] = data['hora_original'].str.split(':').str[1].astype(int) # Extraer los minutos como entero
+        # Definir la función para clasificar la hora unificada
+        def clasificar_hora(hora_unificada):
+            if 0 <= hora_unificada < 600:
+                return 'Madrugada'
+            elif 600 <= hora_unificada < 1200:
+                return 'Mañana'
+            elif 1200 <= hora_unificada < 1800:
+                return 'Tarde'
+            else:
+                return 'Noche'
 
-    # Unificar hora y minutos en una sola columna con formato entero HHMM
-    data['hora_unificada'] = data['hora'] * 100 + data['minutos']
+        # Aplicar la clasificación a la columna 'hora_unificada'
+        data['intervalo_hora'] = data['hora_unificada'].apply(clasificar_hora)
 
-    # Definir la función para clasificar la hora unificada
-    def clasificar_hora(hora_unificada):
-        if 0 <= hora_unificada < 600:
-            return 'Madrugada'
-        elif 600 <= hora_unificada < 1200:
-            return 'Mañana'
-        elif 1200 <= hora_unificada < 1800:
-            return 'Tarde'
-        else:
-            return 'Noche'
+        # Crear columna de fin de semana
+        data['es_fin_de_semana'] = data['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
 
-    # Aplicar la clasificación a la columna 'hora_unificada'
-    data['intervalo_hora'] = data['hora_unificada'].apply(clasificar_hora)
+        # Selección de características para los modelos
+        X = data[['mes', 'intervalo_hora', 'es_fin_de_semana']]
+        y_cantidad = data['cantidad']  # Variable de salida para regresión
+        y_tipo = data['tipo_incidencia']  # Variable de salida para clasificación
 
-    # Crear columna de fin de semana
-    data['es_fin_de_semana'] = data['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
+        # Convertir las categorías en variables dummies
+        X = pd.get_dummies(X, columns=['intervalo_hora'], drop_first=True)
 
-    # Selección de características para los modelos
-    X = data[['mes', 'intervalo_hora', 'es_fin_de_semana']]
-    y_cantidad = data['cantidad']  # Variable de salida para regresión
-    y_tipo = data['tipo_incidencia']  # Variable de salida para clasificación
+        # Convertir 'tipo_incidencia' a números
+        le = LabelEncoder()
+        y_tipo = le.fit_transform(y_tipo)
 
-    # Convertir las categorías en variables dummies
-    X = pd.get_dummies(X, columns=['intervalo_hora'], drop_first=True)
+        # Guardar las columnas para la predicción
+        columnas = X.columns
 
-    # Convertir 'tipo_incidencia' a números
-    le = LabelEncoder()
-    y_tipo = le.fit_transform(y_tipo)
+        # Dividir los datos en conjuntos de entrenamiento y prueba
+        X_train, X_test, y_train, y_test = train_test_split(X, y_cantidad, test_size=0.2, random_state=42)
+        X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(X, y_tipo, test_size=0.2, random_state=42)
 
-    # Guardar las columnas para la predicción
-    columnas = X.columns
+        # Aplicar PCA para reducción de dimensionalidad
+        pca = PCA(n_components=2)
+        X_train_pca = pca.fit_transform(X_train)
+        X_test_pca = pca.transform(X_test)
 
-    # Dividir los datos en conjuntos de entrenamiento y prueba
-    X_train, X_test, y_train, y_test = train_test_split(X, y_cantidad, test_size=0.2, random_state=42)
-    X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(X, y_tipo, test_size=0.2, random_state=42)
+        # Entrenamiento de modelos
+        model_regresion = LinearRegression()
+        model_regresion.fit(X_train_pca, y_train)
 
-    # Aplicar PCA para reducción de dimensionalidad
-    pca = PCA(n_components=2)
-    X_train_pca = pca.fit_transform(X_train)
-    X_test_pca = pca.transform(X_test)
+        model_clasificacion = RandomForestClassifier()
+        model_clasificacion.fit(X_train, y_train_clf)
 
-    # Entrenamiento de modelos
-    model_regresion = LinearRegression()
-    model_regresion.fit(X_train_pca, y_train)
+        # Guardar los modelos y PCA
+    # Guardar modelos
+        guardar_modelos(model_regresion, model_clasificacion, pca, le, X.columns)
 
-    model_clasificacion = RandomForestClassifier()
-    model_clasificacion.fit(X_train, y_train_clf)
-
-    # Guardar los modelos y PCA
-   # Guardar modelos
-    guardar_modelos(model_regresion, model_clasificacion, pca, le, X.columns)
-
-    # Llamar a la función de predicción después de entrenar
-    return predicciones()
+        # Llamar a la función de predicción después de entrenar
+        return predicciones()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+   
 
 def guardar_modelos(model_regresion, model_clasificacion, pca, le, columnas):
-    joblib.dump(model_regresion, os.path.join(base_path, 'ml_scripts', 'modelo_regresion.pkl'))
-    joblib.dump(model_clasificacion, os.path.join(base_path, 'ml_scripts', 'modelo_clasificacion.pkl'))
-    joblib.dump(pca, os.path.join(base_path, 'ml_scripts', 'modelo_pca.pkl'))
-    joblib.dump(le, os.path.join(base_path, 'ml_scripts', 'modelo_le.pkl'))
-    joblib.dump(columnas, os.path.join(base_path, 'ml_scripts', 'columnas.pkl'))
+    joblib.dump(model_regresion, os.path.join(base_path, 'modelo_regresion.pkl'))
+    joblib.dump(model_clasificacion, os.path.join(base_path, 'modelo_clasificacion.pkl'))
+    joblib.dump(pca, os.path.join(base_path, 'modelo_pca.pkl'))
+    joblib.dump(le, os.path.join(base_path, 'modelo_le.pkl'))
+    joblib.dump(columnas, os.path.join(base_path, 'columnas.pkl'))
     return jsonify({"mensaje": "Modelo entrenado exitosamente."})
   
 #se obtienes las predicciones basado a los datos de la clasificacion
@@ -134,8 +123,7 @@ def predicciones():
     warnings.filterwarnings("ignore", message="X has feature names, but LinearRegression was fitted without feature names")
 
     # Cargar los datos desde el archivo JSON
-    # json_path = './ml_scripts/datos_incidencias.json'
-    json_path = os.path.join(base_path, 'ml_scripts', 'datos_incidencias.json')
+    json_path = os.path.join(base_path, 'datos_incidencias.json')
     try:
         with open(json_path, 'r') as file:
             data = json.load(file)
@@ -178,7 +166,7 @@ def predicciones():
     df['es_fin_de_semana'] = df['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
 
     # Preparación para el PDF y lo guardamos
-    pdf_path = os.path.join(base_path, 'ml_scripts', 'reporte_graficas.pdf')
+    pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
 
     # Crear el archivo PDF de cada gráfica
     with PdfPages(pdf_path) as pdf:
@@ -313,15 +301,14 @@ def predicciones():
     os.startfile(pdf_path)
     # Cargar modelos y PCA
     try:
-        model_regresion = joblib.load(os.path.join(base_path, 'ml_scripts', 'modelo_regresion.pkl'))
-        model_clasificacion = joblib.load(os.path.join(base_path, 'ml_scripts', 'modelo_clasificacion.pkl'))
-        pca = joblib.load(os.path.join(base_path, 'ml_scripts', 'modelo_pca.pkl'))
-        le = joblib.load(os.path.join(base_path, 'ml_scripts', 'modelo_le.pkl'))
-        columnas = joblib.load(os.path.join(base_path, 'ml_scripts', 'columnas.pkl'))
+        model_regresion = joblib.load(os.path.join(base_path, 'modelo_regresion.pkl'))
+        model_clasificacion = joblib.load(os.path.join(base_path, 'modelo_clasificacion.pkl'))
+        pca = joblib.load(os.path.join(base_path, 'modelo_pca.pkl'))
+        le = joblib.load(os.path.join(base_path, 'modelo_le.pkl'))
+        columnas = joblib.load(os.path.join(base_path, 'columnas.pkl'))
     except FileNotFoundError as e:
         print("Modelo no encontrado:", e)
         sys.exit(1)
-
 
     # Preparación de los datos de entrada para la predicción
     X_nueva = df[['mes', 'hora', 'intervalo_hora', 'es_fin_de_semana']]
@@ -338,7 +325,7 @@ def predicciones():
     df['tipo_incidencia_pred'] = le.inverse_transform(model_clasificacion.predict(X_nueva))
 
     # Guardar los resultados en un archivo CSV
-    resultados_csv_path = os.path.join(base_path, 'ml_scripts', 'resultados_predicciones.csv')
+    resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
     df.to_csv(resultados_csv_path, index=False)
     print(f"Predicciones guardadas en {resultados_csv_path}")
 
@@ -370,8 +357,8 @@ def predicciones():
     print(patrones_tipos)
 
 	# Guardar los resultados en archivos CSV para su posterior análisis
-    patrones_barrios_csv_path = os.path.join(base_path, 'ml_scripts', 'patrones_barrios.csv')
-    patrones_tipos_csv_path = os.path.join(base_path, 'ml_scripts', 'patrones_tipos.csv')
+    patrones_barrios_csv_path = os.path.join(base_path, 'patrones_barrios.csv')
+    patrones_tipos_csv_path = os.path.join(base_path, 'patrones_tipos.csv')
 
     patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
     patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
@@ -384,7 +371,7 @@ def predicciones():
     print(df[['cantidad_pred', 'tipo_incidencia_pred']].head())
 
 	# Preparación para el PDF de las nuevas visualizaciones
-    pdf_predictions_path = os.path.join(base_path, 'ml_scripts', 'reporte_predicciones.pdf')
+    pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
 
 	# Crear el archivo PDF de cada gráfica
     with PdfPages(pdf_predictions_path) as pdf:
@@ -493,5 +480,5 @@ def predicciones():
     return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data})
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
+    app.run(debug=True,host='0.0.0.0', port=port)
