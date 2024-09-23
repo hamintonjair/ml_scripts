@@ -33,6 +33,7 @@ def home():
     })
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
+    print("Intentando acceder al archivo")
     # Cargar los datos desde el archivo JSON
     # json_path = './ml_scripts/datos_incidencias.json'
     json_path = os.path.join(base_path, 'ml_scripts', 'datos_incidencias.json')
