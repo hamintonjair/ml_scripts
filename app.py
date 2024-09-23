@@ -33,7 +33,8 @@ def home():
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
     # Cargar los datos desde el archivo JSON
-    json_path = './ml_scripts/datos_incidencias.json'
+    # json_path = './ml_scripts/datos_incidencias.json'
+    json_path = os.path.join(os.path.dirname(__file__), 'ml_scripts', 'datos_incidencias.json')
     data = pd.read_json(json_path)
 
     # Convertir columnas 'mes' y 'dia' a numéricas
@@ -126,7 +127,8 @@ def predicciones():
     warnings.filterwarnings("ignore", message="X has feature names, but LinearRegression was fitted without feature names")
 
     # Cargar los datos desde el archivo JSON
-    json_path = './ml_scripts/datos_incidencias.json'
+    # json_path = './ml_scripts/datos_incidencias.json'
+    json_path = os.path.join(os.path.dirname(__file__), 'ml_scripts', 'datos_incidencias.json')
     try:
         with open(json_path, 'r') as file:
             data = json.load(file)
