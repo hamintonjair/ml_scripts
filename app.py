@@ -36,6 +36,8 @@ def entrenar_modelo():
     # Cargar los datos desde el archivo JSON
     # json_path = './ml_scripts/datos_incidencias.json'
     json_path = os.path.join(base_path, 'ml_scripts', 'datos_incidencias.json')
+    print(f"Intentando acceder al archivo: {json_path}")
+
     data = pd.read_json(json_path)
 
     # Convertir columnas 'mes' y 'dia' a numéricas
