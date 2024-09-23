@@ -299,10 +299,17 @@ def predicciones():
         plt.close()
 
     # Abrir el archivo PDF en el navegador predeterminado
+    subprocess.run(['git', 'config', 'user.email', 'hamintonjair@gmail.com'])
+    subprocess.run(['git', 'config', 'user.name', 'hamintonjair'])
+		# Ruta del PDF generado
+    pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
+		# Agrega el PDF a Git
     subprocess.run(['git', 'add', pdf_path])
+		# Realiza el commit
     subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
-    subprocess.run(['git', 'push'])
-    webbrowser.open_new(pdf_path)
+		# Realiza el push
+    subprocess.run(['git', 'push', 'origin', 'main'])  # Asegúrate de que "main" sea la rama correcta
+    # webbrowser.open_new(pdf_path)
     # os.startfile(pdf_path)
     # Cargar modelos y PCA
     try:
@@ -479,10 +486,17 @@ def predicciones():
         plt.close()
 
     # Abrir el archivo PDF en el navegador predeterminado
-    subprocess.run(['git', 'add', pdf_predictions_path])
-    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
-    subprocess.run(['git', 'push'])
-    webbrowser.open_new(pdf_predictions_path)
+    subprocess.run(['git', 'config', 'user.email', 'hamintonjair@gmail.com'])
+    subprocess.run(['git', 'config', 'user.name', 'hamintonjair'])
+		# Ruta del PDF generado
+    pdf_path = os.path.join(base_path, 'pdf_predictions_path.pdf')
+		# Agrega el PDF a Git
+    subprocess.run(['git', 'add', pdf_path])
+		# Realiza el commit
+    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: pdf_predictions_path.pdf'])
+		# Realiza el push
+    subprocess.run(['git', 'push', 'origin', 'main'])  # Asegúrate de que "main" sea la rama correcta
+    # webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
 
     return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data})
