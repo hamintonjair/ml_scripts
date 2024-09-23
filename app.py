@@ -294,15 +294,15 @@ def predicciones():
     os.startfile(pdf_path)
     # Cargar modelos y PCA
     try:
-	joblib.dump(model_regresion, './ml_scripts/modelo_regresion.pkl')
-        joblib.dump(model_clasificacion, './ml_scripts/modelo_clasificacion.pkl')
-        joblib.dump(pca, './ml_scripts/modelo_pca.pkl')
-        joblib.dump(le, './ml_scripts/modelo_le.pkl')
-        joblib.dump(columnas, './ml_scripts/columnas.pkl')
-
+        model_regresion = joblib.load('./ml_scripts/modelo_regresion.pkl')
+        model_clasificacion = joblib.load('./ml_scripts/modelo_clasificacion.pkl')
+        pca = joblib.load('./ml_scripts/modelo_pca.pkl')
+        le = joblib.load('./ml_scripts/modelo_le.pkl')
+        columnas = joblib.load('./ml_scripts/columnas.pkl')
     except FileNotFoundError as e:
         print("Modelo no encontrado:", e)
         sys.exit(1)
+
 
     # Preparación de los datos de entrada para la predicción
     X_nueva = df[['mes', 'hora', 'intervalo_hora', 'es_fin_de_semana']]
