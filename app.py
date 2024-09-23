@@ -365,7 +365,7 @@ def predicciones():
 
 	# Guardar los resultados en archivos CSV para su posterior análisis
     patrones_barrios_csv_path = os.path.join(base_path, 'ml_scripts', 'patrones_barrios.csv')
-    patrones_tipos_csv_path = os.path.join(base_path, 'ml_scripts', 'patrones_tipos.csv')'
+    patrones_tipos_csv_path = os.path.join(base_path, 'ml_scripts', 'patrones_tipos.csv')
 
     patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
     patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
