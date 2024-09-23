@@ -17,12 +17,16 @@ import os
 import matplotlib
 import webbrowser
 import subprocess
+from flask import send_from_directory
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
 CORS(app)
 base_path = os.path.dirname(__file__)
 
+@app.route('/src/<path:filename>')
+def send_pdf(filename):
+    return send_from_directory('src', filename)
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
     try:
