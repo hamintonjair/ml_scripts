@@ -15,6 +15,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from flask_cors import CORS
 import os
 import matplotlib
+import webbrowser
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
@@ -297,8 +298,8 @@ def predicciones():
         plt.close()
 
     # Abrir el archivo PDF en el navegador predeterminado
-    # webbrowser.open_new(pdf_path)
-    os.startfile(pdf_path)
+    webbrowser.open_new(pdf_path)
+    # os.startfile(pdf_path)
     # Cargar modelos y PCA
     try:
         model_regresion = joblib.load(os.path.join(base_path, 'modelo_regresion.pkl'))
@@ -474,8 +475,8 @@ def predicciones():
         plt.close()
 
     # Abrir el archivo PDF en el navegador predeterminado
-    # webbrowser.open_new(pdf_predictions_path)
-    os.startfile(pdf_predictions_path)
+    webbrowser.open_new(pdf_predictions_path)
+    # os.startfile(pdf_predictions_path)
 
     return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data})
 
