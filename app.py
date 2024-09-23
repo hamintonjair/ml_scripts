@@ -299,16 +299,8 @@ def predicciones():
         plt.close()
 
     # Abrir el archivo PDF en el navegador predeterminado
-    subprocess.run(['git', 'config', 'user.email', 'hamintonjair@gmail.com'])
-    subprocess.run(['git', 'config', 'user.name', 'hamintonjair'])
-		# Ruta del PDF generado
-    pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
-		# Agrega el PDF a Git
-    subprocess.run(['git', 'add', pdf_path])
-		# Realiza el commit
-    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
-		# Realiza el push
-    subprocess.run(['git', 'push', 'origin', 'main'])  # Asegúrate de que "main" sea la rama correcta
+    pdf_path = os.path.join(base_path, 'pdf_path.pdf')
+    pdf_url_1  = f'https://mi-api-seguridad.onrender.com/src/pdf_path.pdf'
     # webbrowser.open_new(pdf_path)
     # os.startfile(pdf_path)
     # Cargar modelos y PCA
@@ -484,22 +476,13 @@ def predicciones():
         plt.grid(True)
         pdf.savefig()
         plt.close()
-
+    pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
+    pdf_url = f'https://mi-api-seguridad.onrender.com/src/reporte_predicciones.pdf'
     # Abrir el archivo PDF en el navegador predeterminado
-    subprocess.run(['git', 'config', 'user.email', 'hamintonjair@gmail.com'])
-    subprocess.run(['git', 'config', 'user.name', 'hamintonjair'])
-		# Ruta del PDF generado
-    pdf_path = os.path.join(base_path, 'pdf_predictions_path.pdf')
-		# Agrega el PDF a Git
-    subprocess.run(['git', 'add', pdf_path])
-		# Realiza el commit
-    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: pdf_predictions_path.pdf'])
-		# Realiza el push
-    subprocess.run(['git', 'push', 'origin', 'main'])  # Asegúrate de que "main" sea la rama correcta
     # webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
 
-    return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data})
+    return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data, "pdf_url": pdf_url,"pdf_url_1":pdf_url_1})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
