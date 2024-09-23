@@ -14,10 +14,12 @@ import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 from flask_cors import CORS
 import os
+import io
 import matplotlib
 import webbrowser
 import subprocess
 from flask import send_from_directory
+import zipfile
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
@@ -172,10 +174,13 @@ def predicciones():
     df['es_fin_de_semana'] = df['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
 
     # Preparación para el PDF y lo guardamos
-    pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
+    # pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
+    # Crear un archivo en memoria
+    buffer1 = io.BytesIO()
+    buffer2 = io.BytesIO()
 
     # Crear el archivo PDF de cada gráfica
-    with PdfPages(pdf_path) as pdf:
+    with PdfPages(buffer1) as pdf:
         # Explicación general del aprendizaje aplicado
         plt.figure(figsize=(12, 6))
         plt.text(0.05, 0.5, 
@@ -301,10 +306,12 @@ def predicciones():
                  ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
         pdf.savefig()
         plt.close()
+    # Rewind the buffer to the beginning
+   
 
     # Abrir el archivo PDF en el navegador predeterminado
-    pdf_path = os.path.join(base_path, 'pdf_path.pdf')
-    pdf_url_1  = f'https://mi-api-seguridad.onrender.com/src/pdf_path.pdf'
+    # pdf_path = os.path.join(base_path, 'pdf_path.pdf')
+    # pdf_url_1  = f'https://mi-api-seguridad.onrender.com/src/pdf_path.pdf'
     # webbrowser.open_new(pdf_path)
     # os.startfile(pdf_path)
     # Cargar modelos y PCA
@@ -379,10 +386,10 @@ def predicciones():
     print(df[['cantidad_pred', 'tipo_incidencia_pred']].head())
 
 	# Preparación para el PDF de las nuevas visualizaciones
-    pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
-
+    # pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
+   
 	# Crear el archivo PDF de cada gráfica
-    with PdfPages(pdf_predictions_path) as pdf:
+    with PdfPages(buffer2) as pdf:
         plt.figure(figsize=(10, 6))
         df_baras = df.groupby('es_fin_de_semana').sum().reset_index()
         sns.barplot(data=df_baras, x='es_fin_de_semana', y='cantidad_pred', hue='es_fin_de_semana', palette='viridis', dodge=False, legend=False)
@@ -480,13 +487,29 @@ def predicciones():
         plt.grid(True)
         pdf.savefig()
         plt.close()
-    pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
-    pdf_url = f'https://mi-api-seguridad.onrender.com/src/reporte_predicciones.pdf'
+	    
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zf:
+        # Agregar el primer PDF al ZIP
+        buffer1.seek(0)
+        zf.writestr('reporte_graficas1.pdf', buffer1.read())
+        
+        # Agregar el segundo PDF al ZIP
+        buffer2.seek(0)
+        zf.writestr('reporte_graficas2.pdf', buffer2.read())
+
+    # Mover el cursor del archivo ZIP al principio
+    zip_buffer.seek(0)
+
+    # Enviar el archivo ZIP
+    return send_file(zip_buffer, as_attachment=True, download_name='reportes.zip', mimetype='application/zip')
+    # pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
+    # pdf_url = f'https://mi-api-seguridad.onrender.com/src/reporte_predicciones.pdf'
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
 
-    return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data, "pdf_url": pdf_url,"pdf_url_1":pdf_url_1})
+    # return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
