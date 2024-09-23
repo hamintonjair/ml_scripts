@@ -30,7 +30,7 @@ def home():
         },
         "descripcion": "Esta API permite entrenar un modelo de machine learning con datos de incidencias y generar predicciones basadas en ese modelo."
     })
-@app.route('/entrenar_modelo', methods=['GET'])
+@app.route('/entrenar_modelo', methods=['POST'])
 def entrenar_modelo():
     # Cargar los datos desde el archivo JSON
     json_path = './ml_scripts/datos_incidencias.json'
