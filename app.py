@@ -16,6 +16,7 @@ from flask_cors import CORS
 import os
 import matplotlib
 import webbrowser
+import subprocess
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
@@ -298,6 +299,9 @@ def predicciones():
         plt.close()
 
     # Abrir el archivo PDF en el navegador predeterminado
+    subprocess.run(['git', 'add', pdf_path])
+    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
+    subprocess.run(['git', 'push'])
     webbrowser.open_new(pdf_path)
     # os.startfile(pdf_path)
     # Cargar modelos y PCA
@@ -475,6 +479,9 @@ def predicciones():
         plt.close()
 
     # Abrir el archivo PDF en el navegador predeterminado
+    subprocess.run(['git', 'add', pdf_predictions_path])
+    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
+    subprocess.run(['git', 'push'])
     webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
 
