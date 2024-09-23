@@ -33,11 +33,14 @@ def home():
     })
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
-    print("Intentando acceder al archivo")
     # Cargar los datos desde el archivo JSON
     # json_path = './ml_scripts/datos_incidencias.json'
     json_path = os.path.join(base_path, 'ml_scripts', 'datos_incidencias.json')
-    print(f"Intentando acceder al archivo: {json_path}")
+    try:
+       datos = pd.read_json(json_path)
+    except FileNotFoundError:
+       return jsonify({"error": f"El archivo {json_path} no existe."}), 404
+
 
     data = pd.read_json(json_path)
 
