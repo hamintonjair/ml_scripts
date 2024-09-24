@@ -21,15 +21,24 @@ from sklearn.preprocessing import LabelEncoder
 from matplotlib.backends.backend_pdf import PdfPages
 import requests
 import base64
-
+from git import Repo, GitCommandError
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
 CORS(app)
-base_path = os.path.dirname(__file__)
-# Define el token y la URL del repositorio
+
+# Definir variables de entorno y rutas
+base_path = os.path.dirname(__file__)  # Ruta base del proyecto en Render
 github_token = os.getenv('TU_TOKEN_DE_ACCESO')
-repo_url = 'https://api.github.com/repos/hamintonjair/ml_scripts.git'
+# Configuración del entorno
+repo_url = 'https://github.com/hamintonjair/ml_scripts.git'
+api_url = 'https://api.github.com/repos/hamintonjair/ml_scripts'
+pdf_name1 = 'reporte_graficas_1.pdf'  # Nombre del primer PDF que vas a subir
+pdf_name2 = 'reporte_graficas_2.pdf'  # Nombre del segundo PDF que vas a subir
+pdf_path1 = os.path.join(base_path, pdf_name1)  # Ruta completa al primer archivo PDF
+pdf_path2 = os.path.join(base_path, pdf_name2)  # Ruta completa al segundo archivo PDF
+branch_name = 'main'  # Rama a la que quieres subir el archivo
+
 
 @app.route('/')
 def home():
@@ -179,11 +188,11 @@ def predicciones():
 
     # Preparación para el PDF y lo guardamos
     # pdf_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_graficas.pdf'
-    pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
+    # pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
 
 
     # Crear el archivo PDF de cada gráfica
-    with PdfPages(pdf_path) as pdf:
+    with PdfPages(pdf_path1) as pdf:
         # Explicación general del aprendizaje aplicado
         plt.figure(figsize=(12, 6))
         plt.text(0.05, 0.5, 
@@ -310,29 +319,9 @@ def predicciones():
         pdf.savefig()
         plt.close()
     
-    def upload_to_github(file_path, github_token, repo_url):
-       with open(file_path, 'rb') as file:
-        file_content = file.read()
-
-       content = {
-        'message': 'Agregar datos de incidencias',
-        'content': base64.b64encode(file_content).decode('utf-8'),
-        'branch': 'main'  # Cambia esto si estás usando otra rama
-       }
-
-       response = requests.put(repo_url, 
-                            headers={'Authorization': f'token {github_token}',
-                                     'Accept': 'application/vnd.github.v3+json'},
-                            data=json.dumps(content))
-
-    # Imprime la respuesta
-       if response.status_code == 201:
-        print("Archivo subido exitosamente!")
-       else:
-        print(f"Error: {response.status_code} - {response.json()}")
+     # Llamar a la función para subir el PDF a GitHub
 
 # Llama a la función para subir el PDF generado
-    upload_to_github(pdf_path, github_token, repo_url)
     
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_path)
@@ -413,11 +402,11 @@ def predicciones():
 
 	# Preparación para el PDF de las nuevas visualizaciones
     # pdf_predictions_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_predicciones.pdf'
-    pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
+    # pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
 
 
 	# Crear el archivo PDF de cada gráfica
-    with PdfPages(pdf_predictions_path) as pdf:
+    with PdfPages(pdf_path2) as pdf:
         plt.figure(figsize=(10, 6))
         df_baras = df.groupby('es_fin_de_semana').sum().reset_index()
         sns.barplot(data=df_baras, x='es_fin_de_semana', y='cantidad_pred', hue='es_fin_de_semana', palette='viridis', dodge=False, legend=False)
@@ -516,36 +505,43 @@ def predicciones():
         pdf.savefig()
         plt.close()
 
-# Proporcionar el enlace al PDF
-    def upload_to_github(file_path, github_token, repo_url):
-       with open(file_path, 'rb') as file:
-        file_content = file.read()
-
-       content = {
-        'message': 'Agregar datos de incidencias',
-        'content': base64.b64encode(file_content).decode('utf-8'),
-        'branch': 'main'  # Cambia esto si estás usando otra rama
-       }
-
-       response = requests.put(repo_url, 
-                            headers={'Authorization': f'token {github_token}',
-                                     'Accept': 'application/vnd.github.v3+json'},
-                            data=json.dumps(content))
-
-    # Imprime la respuesta
-       if response.status_code == 201:
-        print("Archivo subido exitosamente!")
-       else:
-        print(f"Error: {response.status_code} - {response.json()}")
-
-# Llama a la función para subir el PDF generado
-    upload_to_github(pdf_path, github_token, repo_url)
 
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
+ # Subir los PDFs a GitHub
+    subir_archivo_github(pdf_path1)
+    subir_archivo_github(pdf_path2)
 
-    return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
+    return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
+
+    # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
+
+def subir_archivo_github(pdf_path):
+    # Lógica para subir el PDF a GitHub
+    with open(pdf_path, 'rb') as f:
+        pdf_content = f.read()
+        pdf_encoded = base64.b64encode(pdf_content).decode('utf-8')
+
+    headers = {
+        'Authorization': f'token {github_token}',
+        'Accept': 'application/vnd.github.v3+json'
+    }
+
+    # Subir el archivo
+    try:
+        response = requests.put(
+            f'{api_url}/contents/{pdf_name1}',  # Aquí deberías cambiar a pdf_name si es un parámetro
+            headers=headers,
+            json={
+                'message': f'Agregar {pdf_name1}',
+                'content': pdf_encoded,
+                'branch': branch_name
+            }
+        )
+        response.raise_for_status()
+    except GitCommandError as e:
+        print(f'Error al subir el archivo: {e}')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
