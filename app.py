@@ -14,12 +14,12 @@ import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 from flask_cors import CORS
 import os
-import io
+from io import BytesIO
 import matplotlib
 import webbrowser
 import subprocess
 from flask import send_from_directory
-import zipfile
+from zipfile import ZipFile
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
