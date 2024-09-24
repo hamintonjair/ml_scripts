@@ -307,7 +307,7 @@ def predicciones():
     # Después de generar el PDF, agrega y haz commit
     subprocess.run(['git', 'add', pdf_path])
     subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
-    subprocess.run(['git', 'push', 'https://{token}@github.com/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
+    subprocess.run(['git', 'push', 'https://api.github.com/repos/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_path)
     # os.startfile(pdf_path)
@@ -496,7 +496,7 @@ def predicciones():
     # Después de generar el PDF, agrega y haz commit
     subprocess.run(['git', 'add', pdf_path])
     subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: pdf_predictions_path.pdf'])
-    subprocess.run(['git', 'push', 'https://{token}@github.com/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
+    subprocess.run(['git', 'push', 'https://api.github.com/repos/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
 
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_predictions_path)
