@@ -1,137 +1,126 @@
-from flask import Flask, jsonify
-import pandas as pd
-import joblib
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import LabelEncoder
+# Importaciones estándar de Python
 import json
+import os
 import sys
 import warnings
-import matplotlib.pyplot as plt
-import seaborn as sns
-from matplotlib.backends.backend_pdf import PdfPages
-from flask_cors import CORS
-import os
-from io import BytesIO
-import matplotlib
 import webbrowser
 import subprocess
-from flask import send_from_directory
-from zipfile import ZipFile
+
+# Importaciones de terceros
+import joblib
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+from flask import Flask, jsonify
+from flask_cors import CORS
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
 CORS(app)
 base_path = os.path.dirname(__file__)
 
-@app.route('/src/<path:filename>')
-def send_pdf(filename):
-    return send_from_directory('src', filename)
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
-    try:
-         # Cargar los datos desde el archivo JSON
-        # json_path = './ml_scripts/datos_incidencias.json'
-        json_path = os.path.join(base_path, 'datos_incidencias.json')
-        data = pd.read_json(json_path)
+    # Cargar los datos desde el archivo JSON
+    # json_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\datos_incidencias.json'
+    json_path = os.path.join(base_path, 'datos_incidencias.json')
+    data = pd.read_json(json_path)
 
-        print(base_path)
-        # Convertir columnas 'mes' y 'dia' a numéricas
-        data['mes'] = pd.to_numeric(data['mes'], errors='coerce')
-        data['dia'] = pd.to_numeric(data['dia'], errors='coerce')
+    # Convertir columnas 'mes' y 'dia' a numéricas
+    data['mes'] = pd.to_numeric(data['mes'], errors='coerce')
+    data['dia'] = pd.to_numeric(data['dia'], errors='coerce')
 
-        # Extraer la hora y los minutos desde la columna original
-        data['hora_original'] = data['hora']
-        data['hora'] = data['hora_original'].str.split(':').str[0].astype(int)    # Extraer la hora como entero
-        data['minutos'] = data['hora_original'].str.split(':').str[1].astype(int) # Extraer los minutos como entero
+    # Extraer la hora y los minutos desde la columna original
+    data['hora_original'] = data['hora']
+    data['hora'] = data['hora_original'].str.split(':').str[0].astype(int)    # Extraer la hora como entero
+    data['minutos'] = data['hora_original'].str.split(':').str[1].astype(int) # Extraer los minutos como entero
 
-        # Unificar hora y minutos en una sola columna con formato entero HHMM
-        data['hora_unificada'] = data['hora'] * 100 + data['minutos']
+    # Unificar hora y minutos en una sola columna con formato entero HHMM
+    data['hora_unificada'] = data['hora'] * 100 + data['minutos']
 
-        # Definir la función para clasificar la hora unificada
-        def clasificar_hora(hora_unificada):
-            if 0 <= hora_unificada < 600:
-                return 'Madrugada'
-            elif 600 <= hora_unificada < 1200:
-                return 'Mañana'
-            elif 1200 <= hora_unificada < 1800:
-                return 'Tarde'
-            else:
-                return 'Noche'
+    # Definir la función para clasificar la hora unificada
+    def clasificar_hora(hora_unificada):
+        if 0 <= hora_unificada < 600:
+            return 'Madrugada'
+        elif 600 <= hora_unificada < 1200:
+            return 'Mañana'
+        elif 1200 <= hora_unificada < 1800:
+            return 'Tarde'
+        else:
+            return 'Noche'
 
-        # Aplicar la clasificación a la columna 'hora_unificada'
-        data['intervalo_hora'] = data['hora_unificada'].apply(clasificar_hora)
+    # Aplicar la clasificación a la columna 'hora_unificada'
+    data['intervalo_hora'] = data['hora_unificada'].apply(clasificar_hora)
 
-        # Crear columna de fin de semana
-        data['es_fin_de_semana'] = data['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
+    # Crear columna de fin de semana
+    data['es_fin_de_semana'] = data['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
 
-        # Selección de características para los modelos
-        X = data[['mes', 'intervalo_hora', 'es_fin_de_semana']]
-        y_cantidad = data['cantidad']  # Variable de salida para regresión
-        y_tipo = data['tipo_incidencia']  # Variable de salida para clasificación
+    # Selección de características para los modelos
+    X = data[['mes', 'intervalo_hora', 'es_fin_de_semana']]
+    y_cantidad = data['cantidad']  # Variable de salida para regresión
+    y_tipo = data['tipo_incidencia']  # Variable de salida para clasificación
 
-        # Convertir las categorías en variables dummies
-        X = pd.get_dummies(X, columns=['intervalo_hora'], drop_first=True)
+    # Convertir las categorías en variables dummies
+    X = pd.get_dummies(X, columns=['intervalo_hora'], drop_first=True)
 
-        # Convertir 'tipo_incidencia' a números
-        le = LabelEncoder()
-        y_tipo = le.fit_transform(y_tipo)
+    # Convertir 'tipo_incidencia' a números
+    le = LabelEncoder()
+    y_tipo = le.fit_transform(y_tipo)
 
-        # Guardar las columnas para la predicción
-        columnas = X.columns
+    # Guardar las columnas para la predicción
+    columnas = X.columns
 
-        # Dividir los datos en conjuntos de entrenamiento y prueba
-        X_train, X_test, y_train, y_test = train_test_split(X, y_cantidad, test_size=0.2, random_state=42)
-        X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(X, y_tipo, test_size=0.2, random_state=42)
+    # Dividir los datos en conjuntos de entrenamiento y prueba
+    X_train, X_test, y_train, y_test = train_test_split(X, y_cantidad, test_size=0.2, random_state=42)
+    X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(X, y_tipo, test_size=0.2, random_state=42)
 
-        # Aplicar PCA para reducción de dimensionalidad
-        pca = PCA(n_components=2)
-        X_train_pca = pca.fit_transform(X_train)
-        X_test_pca = pca.transform(X_test)
+    # Aplicar PCA para reducción de dimensionalidad
+    pca = PCA(n_components=2)
+    X_train_pca = pca.fit_transform(X_train)
+    X_test_pca = pca.transform(X_test)
 
-        # Entrenamiento de modelos
-        model_regresion = LinearRegression()
-        model_regresion.fit(X_train_pca, y_train)
+    # Entrenamiento de modelos
+    model_regresion = LinearRegression()
+    model_regresion.fit(X_train_pca, y_train)
 
-        model_clasificacion = RandomForestClassifier()
-        model_clasificacion.fit(X_train, y_train_clf)
+    model_clasificacion = RandomForestClassifier()
+    model_clasificacion.fit(X_train, y_train_clf)
 
-        # Guardar los modelos y PCA
-    # Guardar modelos
-        guardar_modelos(model_regresion, model_clasificacion, pca, le, X.columns)
+    # Guardar los modelos y PCA
+   # Guardar modelos
+    guardar_modelos(model_regresion, model_clasificacion, pca, le, X.columns)
 
-        # Llamar a la función de predicción después de entrenar
-        return predicciones()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-   
+    # Llamar a la función de predicción después de entrenar
+    return predicciones()
 
 def guardar_modelos(model_regresion, model_clasificacion, pca, le, columnas):
+      
     joblib.dump(model_regresion, os.path.join(base_path, 'modelo_regresion.pkl'))
     joblib.dump(model_clasificacion, os.path.join(base_path, 'modelo_clasificacion.pkl'))
     joblib.dump(pca, os.path.join(base_path, 'modelo_pca.pkl'))
     joblib.dump(le, os.path.join(base_path, 'modelo_le.pkl'))
     joblib.dump(columnas, os.path.join(base_path, 'columnas.pkl'))
+    
     return jsonify({"mensaje": "Modelo entrenado exitosamente."})
   
 #se obtienes las predicciones basado a los datos de la clasificacion
 @app.route('/predicciones', methods=['GET'])
 def predicciones():
     # # Cargar los modelos
-    # try:
-    #     model_regresion = joblib.load('./ml_scripts/modelo_regresion.pkl')
-    #     model_clasificacion = joblib.load('./ml_scripts/modelo_clasificacion.pkl')
-    #     le = joblib.load('./ml_scripts/modelo_le.pkl')
-    # except FileNotFoundError as e:
-    #     return jsonify({"error": str(e)}), 404
-
-
     warnings.filterwarnings("ignore", message="X has feature names, but LinearRegression was fitted without feature names")
 
     # Cargar los datos desde el archivo JSON
+    # json_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\datos_incidencias.json'
     json_path = os.path.join(base_path, 'datos_incidencias.json')
+
     try:
         with open(json_path, 'r') as file:
             data = json.load(file)
@@ -174,13 +163,12 @@ def predicciones():
     df['es_fin_de_semana'] = df['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
 
     # Preparación para el PDF y lo guardamos
-    # pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
-    # Crear un archivo en memoria
-    buffer1 = io.BytesIO()
-    buffer2 = io.BytesIO()
+    # pdf_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_graficas.pdf'
+    pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
+
 
     # Crear el archivo PDF de cada gráfica
-    with PdfPages(buffer1) as pdf:
+    with PdfPages(pdf_path) as pdf:
         # Explicación general del aprendizaje aplicado
         plt.figure(figsize=(12, 6))
         plt.text(0.05, 0.5, 
@@ -306,16 +294,26 @@ def predicciones():
                  ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
         pdf.savefig()
         plt.close()
-    # Rewind the buffer to the beginning
-   
 
+    git_user_email = os.getenv('GIT_USER_EMAIL')
+    git_user_name = os.getenv('GIT_USER_NAME')
+
+	# Configurar Git en el script
+    subprocess.run(['git', 'config', '--global', 'user.email', git_user_email])
+    subprocess.run(['git', 'config', '--global', 'user.name', git_user_name])
+    
+    github_token = 'token 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'  # Cambia esto por tu token
+
+    # Después de generar el PDF, agrega y haz commit
+    subprocess.run(['git', 'add', pdf_path])
+    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
+    subprocess.run(['git', 'push', 'https://{token}@github.com/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
     # Abrir el archivo PDF en el navegador predeterminado
-    # pdf_path = os.path.join(base_path, 'pdf_path.pdf')
-    # pdf_url_1  = f'https://mi-api-seguridad.onrender.com/src/pdf_path.pdf'
     # webbrowser.open_new(pdf_path)
     # os.startfile(pdf_path)
     # Cargar modelos y PCA
     try:
+        
         model_regresion = joblib.load(os.path.join(base_path, 'modelo_regresion.pkl'))
         model_clasificacion = joblib.load(os.path.join(base_path, 'modelo_clasificacion.pkl'))
         pca = joblib.load(os.path.join(base_path, 'modelo_pca.pkl'))
@@ -340,7 +338,9 @@ def predicciones():
     df['tipo_incidencia_pred'] = le.inverse_transform(model_clasificacion.predict(X_nueva))
 
     # Guardar los resultados en un archivo CSV
+    # resultados_csv_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\resultados_predicciones.csv'
     resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
+
     df.to_csv(resultados_csv_path, index=False)
     print(f"Predicciones guardadas en {resultados_csv_path}")
 
@@ -386,10 +386,12 @@ def predicciones():
     print(df[['cantidad_pred', 'tipo_incidencia_pred']].head())
 
 	# Preparación para el PDF de las nuevas visualizaciones
-    # pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
-   
+    # pdf_predictions_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_predicciones.pdf'
+    pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
+
+
 	# Crear el archivo PDF de cada gráfica
-    with PdfPages(buffer2) as pdf:
+    with PdfPages(pdf_predictions_path) as pdf:
         plt.figure(figsize=(10, 6))
         df_baras = df.groupby('es_fin_de_semana').sum().reset_index()
         sns.barplot(data=df_baras, x='es_fin_de_semana', y='cantidad_pred', hue='es_fin_de_semana', palette='viridis', dodge=False, legend=False)
@@ -487,30 +489,21 @@ def predicciones():
         plt.grid(True)
         pdf.savefig()
         plt.close()
-	    
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w') as zf:
-        # Agregar el primer PDF al ZIP
-        buffer1.seek(0)
-        zf.writestr('reporte_graficas1.pdf', buffer1.read())
-        
-        # Agregar el segundo PDF al ZIP
-        buffer2.seek(0)
-        zf.writestr('reporte_graficas2.pdf', buffer2.read())
 
-    # Mover el cursor del archivo ZIP al principio
-    zip_buffer.seek(0)
+# Proporcionar el enlace al PDF
+    github_token = 'token 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'  # Cambia esto por tu token
 
-    # Enviar el archivo ZIP
-    return send_file(zip_buffer, as_attachment=True, download_name='reportes.zip', mimetype='application/zip')
-    # pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
-    # pdf_url = f'https://mi-api-seguridad.onrender.com/src/reporte_predicciones.pdf'
+    # Después de generar el PDF, agrega y haz commit
+    subprocess.run(['git', 'add', pdf_path])
+    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: pdf_predictions_path.pdf'])
+    subprocess.run(['git', 'push', 'https://{token}@github.com/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
+
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
 
-    # return jsonify({"mensaje": "Predicción realizada con éxito.", "datos": data})
+    return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
     app.run(debug=True,host='0.0.0.0', port=port)
