@@ -28,8 +28,8 @@ app = Flask(__name__)
 CORS(app)
 base_path = os.path.dirname(__file__)
 # Define el token y la URL del repositorio
-github_token = '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'
-repo_url = 'https://api.github.com/repos/hamintonjair/ml_scripts/contents/'
+github_token = 'token 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'
+repo_url = 'https://api.github.com/repos/hamintonjair/ml_scripts.git'
 
 @app.route('/')
 def home():
