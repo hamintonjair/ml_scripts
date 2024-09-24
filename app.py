@@ -4,7 +4,6 @@ import os
 import sys
 import warnings
 import webbrowser
-import subprocess
 
 # Importaciones de terceros
 import joblib
@@ -20,12 +19,18 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from matplotlib.backends.backend_pdf import PdfPages
+import requests
+import base64
 
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
 CORS(app)
 base_path = os.path.dirname(__file__)
+# Define el token y la URL del repositorio
+github_token = 'token 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'
+repo_url = 'https://api.github.com/repos/hamintonjair/ml_scripts/contents/datos_incidencias.json'
+
 
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
@@ -294,20 +299,31 @@ def predicciones():
                  ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
         pdf.savefig()
         plt.close()
-
-    git_user_email = os.getenv('GIT_USER_EMAIL')
-    git_user_name = os.getenv('GIT_USER_NAME')
-
-	# Configurar Git en el script
-    subprocess.run(['git', 'config', '--global', 'user.email', git_user_email])
-    subprocess.run(['git', 'config', '--global', 'user.name', git_user_name])
     
-    github_token = 'token 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'  # Cambia esto por tu token
+    def upload_to_github(file_path, github_token, repo_url):
+       with open(file_path, 'rb') as file:
+        file_content = file.read()
 
-    # Después de generar el PDF, agrega y haz commit
-    subprocess.run(['git', 'add', pdf_path])
-    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: reporte_graficas.pdf'])
-    subprocess.run(['git', 'push', 'https://api.github.com/repos/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
+       content = {
+        'message': 'Agregar datos de incidencias',
+        'content': base64.b64encode(file_content).decode('utf-8'),
+        'branch': 'main'  # Cambia esto si estás usando otra rama
+       }
+
+       response = requests.put(repo_url, 
+                            headers={'Authorization': f'token {github_token}',
+                                     'Accept': 'application/vnd.github.v3+json'},
+                            data=json.dumps(content))
+
+    # Imprime la respuesta
+       if response.status_code == 201:
+        print("Archivo subido exitosamente!")
+       else:
+        print(f"Error: {response.status_code} - {response.json()}")
+
+# Llama a la función para subir el PDF generado
+    upload_to_github(pdf_path, github_token, repo_url)
+    
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_path)
     # os.startfile(pdf_path)
@@ -491,12 +507,29 @@ def predicciones():
         plt.close()
 
 # Proporcionar el enlace al PDF
-    github_token = 'token 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'  # Cambia esto por tu token
+    def upload_to_github(file_path, github_token, repo_url):
+       with open(file_path, 'rb') as file:
+        file_content = file.read()
 
-    # Después de generar el PDF, agrega y haz commit
-    subprocess.run(['git', 'add', pdf_path])
-    subprocess.run(['git', 'commit', '-m', 'Agregar PDF generado: pdf_predictions_path.pdf'])
-    subprocess.run(['git', 'push', 'https://api.github.com/repos/hamintonjair/ml_scripts.git'.format(token=github_token), 'main'])
+       content = {
+        'message': 'Agregar datos de incidencias',
+        'content': base64.b64encode(file_content).decode('utf-8'),
+        'branch': 'main'  # Cambia esto si estás usando otra rama
+       }
+
+       response = requests.put(repo_url, 
+                            headers={'Authorization': f'token {github_token}',
+                                     'Accept': 'application/vnd.github.v3+json'},
+                            data=json.dumps(content))
+
+    # Imprime la respuesta
+       if response.status_code == 201:
+        print("Archivo subido exitosamente!")
+       else:
+        print(f"Error: {response.status_code} - {response.json()}")
+
+# Llama a la función para subir el PDF generado
+    upload_to_github(pdf_path, github_token, repo_url)
 
     # Abrir el archivo PDF en el navegador predeterminado
     # webbrowser.open_new(pdf_predictions_path)
