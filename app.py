@@ -28,7 +28,7 @@ app = Flask(__name__)
 CORS(app)
 base_path = os.path.dirname(__file__)
 # Define el token y la URL del repositorio
-github_token = 'token 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'
+github_token = os.getenv('TU_TOKEN_DE_ACCESO')
 repo_url = 'https://api.github.com/repos/hamintonjair/ml_scripts.git'
 
 @app.route('/')
