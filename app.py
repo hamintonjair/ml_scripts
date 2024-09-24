@@ -318,7 +318,7 @@ def predicciones():
                  ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
         pdf.savefig()
         plt.close()
-    
+    subir_archivo_github(pdf_path1)
      # Llamar a la función para subir el PDF a GitHub
 
 # Llama a la función para subir el PDF generado
@@ -510,7 +510,7 @@ def predicciones():
     # webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
  # Subir los PDFs a GitHub
-    subir_archivo_github(pdf_path1)
+   
     subir_archivo2_github(pdf_path2)
 
     return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
