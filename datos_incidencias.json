@@ -81,6 +81,15 @@
         "cantidad": "1"
     },
     {
+        "mes": "9",
+        "dia": "24",
+        "hora": "10:19",
+        "barrio": "kennedy",
+        "tipo_incidencia": "desastres",
+        "nivel_urgencia": "alto",
+        "cantidad": "1"
+    },
+    {
         "mes": "10",
         "dia": "4",
         "hora": "17:12",
