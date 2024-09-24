@@ -33,8 +33,8 @@ github_token = os.getenv('TU_TOKEN_DE_ACCESO')
 # Configuración del entorno
 repo_url = 'https://github.com/hamintonjair/ml_scripts.git'
 api_url = 'https://api.github.com/repos/hamintonjair/ml_scripts'
-pdf_name1 = 'reporte_graficas_1.pdf'  # Nombre del primer PDF que vas a subir
-pdf_name2 = 'reporte_graficas_2.pdf'  # Nombre del segundo PDF que vas a subir
+pdf_name1 = 'pdf_reporte_graficas.pdf'  # Nombre del primer PDF que vas a subir
+pdf_name2 = 'pdf_predictions_path.pdf'  # Nombre del segundo PDF que vas a subir
 pdf_path1 = os.path.join(base_path, pdf_name1)  # Ruta completa al primer archivo PDF
 pdf_path2 = os.path.join(base_path, pdf_name2)  # Ruta completa al segundo archivo PDF
 branch_name = 'main'  # Rama a la que quieres subir el archivo
@@ -511,15 +511,41 @@ def predicciones():
     # os.startfile(pdf_predictions_path)
  # Subir los PDFs a GitHub
     subir_archivo_github(pdf_path1)
-    subir_archivo_github(pdf_path2)
+    subir_archivo2_github(pdf_path2)
 
     return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
 
     # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
 
-def subir_archivo_github(pdf_path):
+def subir_archivo_github(pdf_path1):
     # Lógica para subir el PDF a GitHub
-    with open(pdf_path, 'rb') as f:
+    with open(pdf_path1, 'rb') as f:
+        pdf_content = f.read()
+        pdf_encoded = base64.b64encode(pdf_content).decode('utf-8')
+
+    headers = {
+        'Authorization': f'token {github_token}',
+        'Accept': 'application/vnd.github.v3+json'
+    }
+
+    # Subir el archivo
+    try:
+        response = requests.put(
+            f'{api_url}/contents/{pdf_name1}',  # Aquí deberías cambiar a pdf_name si es un parámetro
+            headers=headers,
+            json={
+                'message': f'Agregar {pdf_name1}',
+                'content': pdf_encoded,
+                'branch': branch_name
+            }
+        )
+        response.raise_for_status()
+    except GitCommandError as e:
+        print(f'Error al subir el archivo: {e}')
+        
+def subir_archivo2_github(pdf_path2):
+    # Lógica para subir el PDF a GitHub
+    with open(pdf_path2, 'rb') as f:
         pdf_content = f.read()
         pdf_encoded = base64.b64encode(pdf_content).decode('utf-8')
 
