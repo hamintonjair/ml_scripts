@@ -557,10 +557,10 @@ def subir_archivo2_github(pdf_path2):
     # Subir el archivo
     try:
         response = requests.put(
-            f'{api_url}/contents/{pdf_name1}',  # Aquí deberías cambiar a pdf_name si es un parámetro
+            f'{api_url}/contents/{pdf_name2}',  # Aquí deberías cambiar a pdf_name si es un parámetro
             headers=headers,
             json={
-                'message': f'Agregar {pdf_name1}',
+                'message': f'Agregar {pdf_name2}',
                 'content': pdf_encoded,
                 'branch': branch_name
             }
