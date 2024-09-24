@@ -34,7 +34,7 @@ github_token = os.getenv('TU_TOKEN_DE_ACCESO')
 repo_url = 'https://github.com/hamintonjair/ml_scripts.git'
 api_url = 'https://api.github.com/repos/hamintonjair/ml_scripts'
 pdf_name1 = 'pdf_reporte_graficas.pdf'  # Nombre del primer PDF que vas a subir
-pdf_name2 = 'pdf_predictions_path.pdf'  # Nombre del segundo PDF que vas a subir
+pdf_name2 = 'pdf_predictions.pdf'  # Nombre del segundo PDF que vas a subir
 pdf_path1 = os.path.join(base_path, pdf_name1)  # Ruta completa al primer archivo PDF
 pdf_path2 = os.path.join(base_path, pdf_name2)  # Ruta completa al segundo archivo PDF
 branch_name = 'main'  # Rama a la que quieres subir el archivo
@@ -517,8 +517,7 @@ def predicciones():
 
     # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
 
-def subir_archivo_github(pdf_path1):
-    # Lógica para subir el PDF a GitHub
+def subir_archivo_github(pdf_path1, pdf_name1):
     with open(pdf_path1, 'rb') as f:
         pdf_content = f.read()
         pdf_encoded = base64.b64encode(pdf_content).decode('utf-8')
@@ -531,7 +530,7 @@ def subir_archivo_github(pdf_path1):
     # Subir el archivo
     try:
         response = requests.put(
-            f'{api_url}/contents/{pdf_name1}',  # Aquí deberías cambiar a pdf_name si es un parámetro
+            f'{api_url}/contents/{pdf_name1}',
             headers=headers,
             json={
                 'message': f'Agregar {pdf_name1}',
@@ -540,11 +539,15 @@ def subir_archivo_github(pdf_path1):
             }
         )
         response.raise_for_status()
-    except GitCommandError as e:
-        print(f'Error al subir el archivo: {e}')
         
-def subir_archivo2_github(pdf_path2):
-    # Lógica para subir el PDF a GitHub
+        # Retornar la URL del archivo subido
+        download_url = response.json()['content']['download_url']
+        return download_url  # URL de descarga del archivo
+    except requests.exceptions.HTTPError as e:
+        print(f'Error al subir el archivo: {e}')
+        return None  # Retornar None en caso de error
+
+def subir_archivo2_github(pdf_path2, pdf_name2):
     with open(pdf_path2, 'rb') as f:
         pdf_content = f.read()
         pdf_encoded = base64.b64encode(pdf_content).decode('utf-8')
@@ -557,7 +560,7 @@ def subir_archivo2_github(pdf_path2):
     # Subir el archivo
     try:
         response = requests.put(
-            f'{api_url}/contents/{pdf_name2}',  # Aquí deberías cambiar a pdf_name si es un parámetro
+            f'{api_url}/contents/{pdf_name2}',
             headers=headers,
             json={
                 'message': f'Agregar {pdf_name2}',
@@ -566,9 +569,14 @@ def subir_archivo2_github(pdf_path2):
             }
         )
         response.raise_for_status()
-    except GitCommandError as e:
+        
+        # Retornar la URL del archivo subido
+        download_url = response.json()['content']['download_url']
+        return download_url  # URL de descarga del archivo
+    except requests.exceptions.HTTPError as e:
         print(f'Error al subir el archivo: {e}')
-
+        return None  # Retornar None en caso de error
+    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
     app.run(debug=True,host='0.0.0.0', port=port)
