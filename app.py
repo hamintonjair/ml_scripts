@@ -28,9 +28,19 @@ app = Flask(__name__)
 CORS(app)
 base_path = os.path.dirname(__file__)
 # Define el token y la URL del repositorio
-github_token = 'token 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'
-repo_url = 'https://api.github.com/repos/hamintonjair/ml_scripts/contents/datos_incidencias.json'
+github_token = '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'
+repo_url = 'https://api.github.com/repos/hamintonjair/ml_scripts/contents/'
 
+@app.route('/')
+def home():
+    return jsonify({
+        "mensaje": "Bienvenido a la API de análisis de incidencias",
+        "endpoints": {
+            "/entrenar_modelo": "Entrena el modelo con los datos actuales",
+            "/predicciones": "Genera predicciones basadas en el modelo entrenado"
+        },
+        "descripcion": "Esta API permite entrenar un modelo de machine learning con datos de incidencias y generar predicciones basadas en ese modelo."
+    })
 
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
