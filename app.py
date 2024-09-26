@@ -502,7 +502,7 @@ def predicciones():
             "pdf2_url": download_urls.get(pdf_name2),
             "otros_datos": data
         }
-   return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
+    return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
 
 
 
