@@ -317,6 +317,8 @@ def predicciones():
                  ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
         pdf.savefig()
         plt.close()
+# eliminar si ya existe
+    eliminar_archivo_si_existe(pdf_name1)
     subir_archivo_github(pdf_path1, pdf_name1)
      # Llamar a la función para subir el PDF a GitHub
 
@@ -495,7 +497,8 @@ def predicciones():
     # webbrowser.open_new(pdf_predictions_path)
     # os.startfile(pdf_predictions_path)
  # Subir los PDFs a GitHub
-   
+# eliminar si ya existe
+    eliminar_archivo_si_existe(pdf_name2)
     subir_archivo2_github(pdf_path2, pdf_name2)
     datos = {
             "pdf1_url": download_urls.get(pdf_name1),
@@ -505,6 +508,38 @@ def predicciones():
     return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
 
 
+# Función para verificar si el archivo existe y eliminarlo si es necesario
+def eliminar_archivo_si_existe(pdf_name):
+    headers = {
+        'Authorization': f'token {github_token}',
+        'Accept': 'application/vnd.github.v3+json'
+    }
+
+    # Verificar si el archivo existe
+    response = requests.get(
+        f'https://api.github.com/repos/{repo}/contents/{pdf_name}?ref={branch_name}',
+        headers=headers
+    )
+
+    # Si el archivo existe, obtener el SHA y eliminarlo
+    if response.status_code == 200:
+        sha = response.json()['sha']
+        delete_response = requests.delete(
+            f'https://api.github.com/repos/{repo}/contents/{pdf_name}',
+            headers=headers,
+            json={
+                'message': f'Eliminar {pdf_name}',
+                'sha': sha,
+                'branch': branch_name
+            }
+        )
+
+        if delete_response.status_code == 200:
+            print(f'Archivo {pdf_name} eliminado correctamente.')
+        else:
+            print(f'Error al eliminar el archivo {pdf_name}: {delete_response.content}')
+    else:
+        print(f'El archivo {pdf_name} no existe en el repositorio.')
 
 def subir_archivo_github(pdf_path1, pdf_name1):
     with open(pdf_path1, 'rb') as f:
