@@ -497,23 +497,13 @@ def predicciones():
  # Subir los PDFs a GitHub
    
     subir_archivo2_github(pdf_path2, pdf_name2)
+   datos = {
+            "pdf1_url": download_urls.get(pdf_name1),
+            "pdf2_url": download_urls.get(pdf_name2),
+            "otros_datos": data
+        }
+   return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
 
-    # return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
-    subir_archivos_y_retornar_urls(data)
-
-    # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
-
-def subir_archivos_y_retornar_urls(data):
-    # Suponiendo que `data` es un diccionario que contiene información adicional
-     
-    # Preparar los datos para la respuesta
-    datos = {
-        "pdf1_url": download_urls.get(pdf_name1),
-        "pdf2_url": download_urls.get(pdf_name2),
-        "datos": data  # Información adicional
-    }
-    
-    return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})  
 
 
 def subir_archivo_github(pdf_path1, pdf_name1):
