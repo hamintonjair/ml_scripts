@@ -461,21 +461,7 @@ def predicciones():
         plt.grid(True)
         pdf.savefig()
         plt.close()
-        
-        plt.figure(figsize=(10, 6))
-        df_baras = df.groupby(['es_fin_de_semana', 'intervalo_hora']).sum().reset_index()
-        sns.barplot(data=df_baras, x='intervalo_hora', y='cantidad_pred', hue='es_fin_de_semana', palette='seismic', dodge=False, legend=False)
-        plt.title('Cantidad Predicha por Intervalo Horario y Fin de Semana')
-        plt.xlabel('Intervalo Horario')
-        plt.ylabel('Cantidad Predicha')
-        plt.xticks(rotation=45)
-        plt.subplots_adjust(bottom=0.35)
-        plt.text(0.5, -0.4, 'Este gráfico muestra la cantidad total de incidencias predicha para cada intervalo horario y fin de semana.', 
-             ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
-        plt.grid(True)
-        pdf.savefig()
-        plt.close()
-        
+                
         plt.figure(figsize=(10, 6))
         df_baras = df.groupby(['es_fin_de_semana', 'barrio']).sum().reset_index()
         sns.barplot(data=df_baras, x='barrio', y='cantidad_pred', hue='es_fin_de_semana', palette='terrain', dodge=False, legend=False)
