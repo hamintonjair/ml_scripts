@@ -37,7 +37,7 @@ pdf_name2 = 'pdf_predictions.pdf'  # Nombre del segundo PDF que vas a subir
 pdf_path1 = os.path.join(base_path, pdf_name1)  # Ruta completa al primer archivo PDF
 pdf_path2 = os.path.join(base_path, pdf_name2)  # Ruta completa al segundo archivo PDF
 branch_name = 'main'  # Rama a la que quieres subir el archivo
-
+download_urls = {}
 
 @app.route('/')
 def home():
@@ -498,7 +498,13 @@ def predicciones():
    
     subir_archivo2_github(pdf_path2, pdf_name2)
 
-    return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
+    # return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
+    datos = {
+            "pdf1_url": download_urls[pdf_name1],
+            "pdf2_url": download_urls[pdf_name2],
+            "datos": data
+        }
+    return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
 
     # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
 
@@ -527,7 +533,9 @@ def subir_archivo_github(pdf_path1, pdf_name1):
         
         # Retornar la URL del archivo subido
         download_url = response.json()['content']['download_url']
-        return download_url  # URL de descarga del archivo
+        # return download_url  # URL de descarga del archivo
+	download_urls[pdf_name1] = download_url
+
     except requests.exceptions.HTTPError as e:
         print(f'Error al subir el archivo: {e}')
         return None  # Retornar None en caso de error
@@ -557,7 +565,9 @@ def subir_archivo2_github(pdf_path2, pdf_name2):
         
         # Retornar la URL del archivo subido
         download_url = response.json()['content']['download_url']
-        return download_url  # URL de descarga del archivo
+        # return download_url  # URL de descarga del archivo
+	download_urls[pdf_name2] = download_url
+
     except requests.exceptions.HTTPError as e:
         print(f'Error al subir el archivo: {e}')
         return None  # Retornar None en caso de error
