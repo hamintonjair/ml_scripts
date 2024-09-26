@@ -499,14 +499,22 @@ def predicciones():
     subir_archivo2_github(pdf_path2, pdf_name2)
 
     # return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
-    datos = {
-            "pdf1_url": download_urls[pdf_name1],
-            "pdf2_url": download_urls[pdf_name2],
-            "datos": data
-        }
-    return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
+    subir_archivos_y_retornar_urls(data)
 
     # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
+
+def subir_archivos_y_retornar_urls(data):
+    # Suponiendo que `data` es un diccionario que contiene información adicional
+     
+    # Preparar los datos para la respuesta
+    datos = {
+        "pdf1_url": download_urls.get(pdf_name1),
+        "pdf2_url": download_urls.get(pdf_name2),
+        "datos": data  # Información adicional
+    }
+    
+    return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})  
+
 
 def subir_archivo_github(pdf_path1, pdf_name1):
     with open(pdf_path1, 'rb') as f:
@@ -533,9 +541,8 @@ def subir_archivo_github(pdf_path1, pdf_name1):
         
         # Retornar la URL del archivo subido
         download_url = response.json()['content']['download_url']
+        download_urls[pdf_name1] = download_url
         # return download_url  # URL de descarga del archivo
-	download_urls[pdf_name1] = download_url
-
     except requests.exceptions.HTTPError as e:
         print(f'Error al subir el archivo: {e}')
         return None  # Retornar None en caso de error
@@ -565,13 +572,11 @@ def subir_archivo2_github(pdf_path2, pdf_name2):
         
         # Retornar la URL del archivo subido
         download_url = response.json()['content']['download_url']
+        download_urls[pdf_name2] = download_url
         # return download_url  # URL de descarga del archivo
-	download_urls[pdf_name2] = download_url
-
     except requests.exceptions.HTTPError as e:
         print(f'Error al subir el archivo: {e}')
         return None  # Retornar None en caso de error
-    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
     app.run(debug=True,host='0.0.0.0', port=port)
