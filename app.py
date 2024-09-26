@@ -3,7 +3,6 @@ import json
 import os
 import sys
 import warnings
-import webbrowser
 
 # Importaciones de terceros
 import joblib
@@ -21,7 +20,6 @@ from sklearn.preprocessing import LabelEncoder
 from matplotlib.backends.backend_pdf import PdfPages
 import requests
 import base64
-from git import Repo, GitCommandError
 
 matplotlib.use('Agg') 
 app = Flask(__name__)
@@ -53,7 +51,6 @@ def home():
 @app.route('/entrenar_modelo', methods=['GET'])
 def entrenar_modelo():
     # Cargar los datos desde el archivo JSON
-    # json_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\datos_incidencias.json'
     json_path = os.path.join(base_path, 'datos_incidencias.json')
     data = pd.read_json(json_path)
 
@@ -141,7 +138,6 @@ def predicciones():
     warnings.filterwarnings("ignore", message="X has feature names, but LinearRegression was fitted without feature names")
 
     # Cargar los datos desde el archivo JSON
-    # json_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\datos_incidencias.json'
     json_path = os.path.join(base_path, 'datos_incidencias.json')
 
     try:
@@ -184,11 +180,6 @@ def predicciones():
 
     # Crear la columna 'es_fin_de_semana'
     df['es_fin_de_semana'] = df['dia'].apply(lambda x: 1 if x in [6, 7] else 0)
-
-    # Preparación para el PDF y lo guardamos
-    # pdf_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_graficas.pdf'
-    # pdf_path = os.path.join(base_path, 'reporte_graficas.pdf')
-
 
     # Crear el archivo PDF de cada gráfica
     with PdfPages(pdf_path1) as pdf:
@@ -321,12 +312,6 @@ def predicciones():
     eliminar_archivo_si_existe(pdf_name1)
     subir_archivo_github(pdf_path1, pdf_name1)
      # Llamar a la función para subir el PDF a GitHub
-
-# Llama a la función para subir el PDF generado
-    
-    # Abrir el archivo PDF en el navegador predeterminado
-    # webbrowser.open_new(pdf_path)
-    # os.startfile(pdf_path)
     # Cargar modelos y PCA
     try:
         
@@ -354,7 +339,6 @@ def predicciones():
     df['tipo_incidencia_pred'] = le.inverse_transform(model_clasificacion.predict(X_nueva))
 
     # Guardar los resultados en un archivo CSV
-    # resultados_csv_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\resultados_predicciones.csv'
     resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
 
     df.to_csv(resultados_csv_path, index=False)
@@ -400,11 +384,6 @@ def predicciones():
 	# *****************************************************************************************
 	# Mostrar resultados
     print(df[['cantidad_pred', 'tipo_incidencia_pred']].head())
-
-	# Preparación para el PDF de las nuevas visualizaciones
-    # pdf_predictions_path = 'C:\\xampp\\htdocs\\Seguridad_Ciudadana\\ml_scripts\\reporte_predicciones.pdf'
-    # pdf_predictions_path = os.path.join(base_path, 'reporte_predicciones.pdf')
-
 
 	# Crear el archivo PDF de cada gráfica
     with PdfPages(pdf_path2) as pdf:
