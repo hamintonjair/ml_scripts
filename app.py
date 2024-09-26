@@ -31,8 +31,7 @@ CORS(app)
 base_path = os.path.dirname(__file__)  # Ruta base del proyecto en Render
 github_token = os.getenv('TU_TOKEN_DE_ACCESO')
 # Configuración del entorno
-repo_url = 'https://github.com/hamintonjair/ml_scripts.git'
-api_url = 'https://api.github.com/repos/hamintonjair/ml_scripts'
+repo = 'hamintonjair/ml_scripts'
 pdf_name1 = 'pdf_reporte_graficas.pdf'  # Nombre del primer PDF que vas a subir
 pdf_name2 = 'pdf_predictions.pdf'  # Nombre del segundo PDF que vas a subir
 pdf_path1 = os.path.join(base_path, pdf_name1)  # Ruta completa al primer archivo PDF
@@ -318,7 +317,7 @@ def predicciones():
                  ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
         pdf.savefig()
         plt.close()
-    subir_archivo_github(pdf_path1)
+    subir_archivo_github(pdf_path1, pdf_name1)
      # Llamar a la función para subir el PDF a GitHub
 
 # Llama a la función para subir el PDF generado
@@ -511,7 +510,7 @@ def predicciones():
     # os.startfile(pdf_predictions_path)
  # Subir los PDFs a GitHub
    
-    subir_archivo2_github(pdf_path2)
+    subir_archivo2_github(pdf_path2, pdf_name2)
 
     return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": data})
 
@@ -530,7 +529,7 @@ def subir_archivo_github(pdf_path1, pdf_name1):
     # Subir el archivo
     try:
         response = requests.put(
-            f'{api_url}/contents/{pdf_name1}',
+            f'https://api.github.com/repos/{repo}/contents/{pdf_name1}',
             headers=headers,
             json={
                 'message': f'Agregar {pdf_name1}',
@@ -560,7 +559,7 @@ def subir_archivo2_github(pdf_path2, pdf_name2):
     # Subir el archivo
     try:
         response = requests.put(
-            f'{api_url}/contents/{pdf_name2}',
+            f'https://api.github.com/repos/{repo}/contents/{pdf_name2}',
             headers=headers,
             json={
                 'message': f'Agregar {pdf_name2}',
