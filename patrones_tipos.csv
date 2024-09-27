@@ -1,8 +1,0 @@
-tipo_incidencia,cantidad,cantidad_pred,prediccion_clasificacion_mode
-accidente laborales,2,1.1279256230560475,robo/hurto
-accidente transito,1,1.0532109384532937,robo/hurto
-emergencia,1,1.1372649586313919,robo/hurto
-incendio,1,1.1279256230560475,robo/hurto
-otro,1,1.0532109384532937,robo/hurto
-robo/hurto,111111,1.1154731756222553,robo/hurto
-vandalismo,111,1.1154731756222553,robo/hurto
