@@ -129,7 +129,21 @@ def guardar_modelos(model_regresion, model_clasificacion, pca, le, columnas):
     joblib.dump(le, os.path.join(base_path, 'modelo_le.pkl'))
     joblib.dump(columnas, os.path.join(base_path, 'columnas.pkl'))
     
-    return jsonify({"mensaje": "Modelo entrenado exitosamente."})
+     # Lista de archivos a subir
+    archivos_modelos = [
+        ('modelo_regresion.pkl', os.path.join(base_path, 'modelo_regresion.pkl')),
+        ('modelo_clasificacion.pkl', os.path.join(base_path, 'modelo_clasificacion.pkl')),
+        ('modelo_pca.pkl', os.path.join(base_path, 'modelo_pca.pkl')),
+        ('modelo_le.pkl', os.path.join(base_path, 'modelo_le.pkl')),
+        ('columnas.pkl', os.path.join(base_path, 'columnas.pkl'))
+    ]
+
+    # Iterar sobre los archivos, eliminarlos si existen, y luego subirlos a GitHub
+    for file_name, file_path in archivos_modelos:
+        eliminar_archivo_si_existe(file_name)
+        subir_archivo_github(file_path, file_name)
+
+    return jsonify({"mensaje": "Modelos entrenados y subidos a GitHub exitosamente."})
   
 #se obtienes las predicciones basado a los datos de la clasificacion
 @app.route('/predicciones', methods=['GET'])
@@ -340,6 +354,7 @@ def predicciones():
 
     # Guardar los resultados en un archivo CSV
     resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
+    guardar_resultados(resultados_csv_path)
 
     df.to_csv(resultados_csv_path, index=False)
     print(f"Predicciones guardadas en {resultados_csv_path}")
@@ -372,14 +387,7 @@ def predicciones():
     print(patrones_tipos)
 
 	# Guardar los resultados en archivos CSV para su posterior análisis
-    patrones_barrios_csv_path = os.path.join(base_path, 'patrones_barrios.csv')
-    patrones_tipos_csv_path = os.path.join(base_path, 'patrones_tipos.csv')
-
-    patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
-    patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
-
-    print(f"\nPatrones por barrio guardados en {patrones_barrios_csv_path}")
-    print(f"Patrones por tipo de incidencia guardados en {patrones_tipos_csv_path}")
+    guardar_patrones_csv(patrones_barrios, patrones_tipos)
 
 	# *****************************************************************************************
 	# Mostrar resultados
@@ -457,6 +465,37 @@ def predicciones():
         }
     return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
 
+
+# Función para guardar los archivos CSV y subirlos a GitHub
+def guardar_patrones_csv(patrones_barrios, patrones_tipos):
+    # Guardar los resultados en archivos CSV para su posterior análisis
+    patrones_barrios_csv_path = os.path.join(base_path, 'patrones_barrios.csv')
+    patrones_tipos_csv_path = os.path.join(base_path, 'patrones_tipos.csv')
+
+    # Guardar los datos en archivos CSV locales
+    patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
+    patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
+
+    # Eliminar el archivo si ya existe en el repositorio y luego subir el nuevo
+    eliminar_archivo_si_existe('patrones_barrios.csv')
+    subir_archivo_github(patrones_barrios_csv_path, 'patrones_barrios.csv')
+
+    eliminar_archivo_si_existe('patrones_tipos.csv')
+    subir_archivo_github(patrones_tipos_csv_path, 'patrones_tipos.csv')
+
+    return jsonify({"mensaje": "Archivos de patrones guardados y subidos a GitHub exitosamente."})
+# Función para guardar el archivo de resultados y subirlo a GitHub
+def guardar_resultados(resultados):
+    resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
+
+    # Guardar los resultados en un archivo CSV local
+    resultados.to_csv(resultados_csv_path, index=False)
+
+    # Eliminar el archivo si ya existe en el repositorio y luego subir el nuevo
+    eliminar_archivo_si_existe('resultados_predicciones.csv')
+    subir_archivo_github(resultados_csv_path, 'resultados_predicciones.csv')
+
+    return jsonify({"mensaje": "Archivo de resultados guardado y subido a GitHub exitosamente."})
 
 # Función para verificar si el archivo existe y eliminarlo si es necesario
 def eliminar_archivo_si_existe(pdf_name):
