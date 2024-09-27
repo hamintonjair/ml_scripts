@@ -129,21 +129,7 @@ def guardar_modelos(model_regresion, model_clasificacion, pca, le, columnas):
     joblib.dump(le, os.path.join(base_path, 'modelo_le.pkl'))
     joblib.dump(columnas, os.path.join(base_path, 'columnas.pkl'))
     
-     # Lista de archivos a subir
-    archivos_modelos = [
-        ('modelo_regresion.pkl', os.path.join(base_path, 'modelo_regresion.pkl')),
-        ('modelo_clasificacion.pkl', os.path.join(base_path, 'modelo_clasificacion.pkl')),
-        ('modelo_pca.pkl', os.path.join(base_path, 'modelo_pca.pkl')),
-        ('modelo_le.pkl', os.path.join(base_path, 'modelo_le.pkl')),
-        ('columnas.pkl', os.path.join(base_path, 'columnas.pkl'))
-    ]
-
-    # Iterar sobre los archivos, eliminarlos si existen, y luego subirlos a GitHub
-    for file_name, file_path in archivos_modelos:
-        eliminar_archivo_si_existe(file_name)
-        subir_archivo_github(file_path, file_name)
-
-    return jsonify({"mensaje": "Modelos entrenados y subidos a GitHub exitosamente."})
+    return jsonify({"mensaje": "Modelo entrenado exitosamente."})
   
 #se obtienes las predicciones basado a los datos de la clasificacion
 @app.route('/predicciones', methods=['GET'])
@@ -322,10 +308,11 @@ def predicciones():
                  ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
         pdf.savefig()
         plt.close()
-# eliminar si ya existe
+    #eliminar si existe 
     eliminar_archivo_si_existe(pdf_name1)
     subir_archivo_github(pdf_path1, pdf_name1)
      # Llamar a la función para subir el PDF a GitHub
+
     # Cargar modelos y PCA
     try:
         
@@ -354,7 +341,6 @@ def predicciones():
 
     # Guardar los resultados en un archivo CSV
     resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
-    guardar_resultados(resultados_csv_path)
 
     df.to_csv(resultados_csv_path, index=False)
     print(f"Predicciones guardadas en {resultados_csv_path}")
@@ -387,7 +373,14 @@ def predicciones():
     print(patrones_tipos)
 
 	# Guardar los resultados en archivos CSV para su posterior análisis
-    guardar_patrones_csv(patrones_barrios, patrones_tipos)
+    patrones_barrios_csv_path = os.path.join(base_path, 'patrones_barrios.csv')
+    patrones_tipos_csv_path = os.path.join(base_path, 'patrones_tipos.csv')
+
+    patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
+    patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
+
+    print(f"\nPatrones por barrio guardados en {patrones_barrios_csv_path}")
+    print(f"Patrones por tipo de incidencia guardados en {patrones_tipos_csv_path}")
 
 	# *****************************************************************************************
 	# Mostrar resultados
@@ -450,12 +443,8 @@ def predicciones():
         plt.grid(True)
         pdf.savefig()
         plt.close()
-           
-    # Abrir el archivo PDF en el navegador predeterminado
-    # webbrowser.open_new(pdf_predictions_path)
-    # os.startfile(pdf_predictions_path)
- # Subir los PDFs a GitHub
-# eliminar si ya existe
+                
+    #eliminar si existe 
     eliminar_archivo_si_existe(pdf_name2)
     subir_archivo2_github(pdf_path2, pdf_name2)
     datos = {
@@ -465,38 +454,9 @@ def predicciones():
         }
     return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
 
+    # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
 
-# Función para guardar los archivos CSV y subirlos a GitHub
-def guardar_patrones_csv(patrones_barrios, patrones_tipos):
-    # Guardar los resultados en archivos CSV para su posterior análisis
-    patrones_barrios_csv_path = os.path.join(base_path, 'patrones_barrios.csv')
-    patrones_tipos_csv_path = os.path.join(base_path, 'patrones_tipos.csv')
-
-    # Guardar los datos en archivos CSV locales
-    patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
-    patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
-
-    # Eliminar el archivo si ya existe en el repositorio y luego subir el nuevo
-    eliminar_archivo_si_existe('patrones_barrios.csv')
-    subir_archivo_github(patrones_barrios_csv_path, 'patrones_barrios.csv')
-
-    eliminar_archivo_si_existe('patrones_tipos.csv')
-    subir_archivo_github(patrones_tipos_csv_path, 'patrones_tipos.csv')
-
-    return jsonify({"mensaje": "Archivos de patrones guardados y subidos a GitHub exitosamente."})
-# Función para guardar el archivo de resultados y subirlo a GitHub
-def guardar_resultados(resultados_csv_path):
-    
-    # Guardar los resultados en un archivo CSV local
-    resultados_csv_path.to_csv(resultados_csv_path, index=False)
-
-    # Eliminar el archivo si ya existe en el repositorio y luego subir el nuevo
-    eliminar_archivo_si_existe('resultados_predicciones.csv')
-    subir_archivo_github(resultados_csv_path, 'resultados_predicciones.csv')
-
-    return jsonify({"mensaje": "Archivo de resultados guardado y subido a GitHub exitosamente."})
-
-# Función para verificar si el archivo existe y eliminarlo si es necesario
+# Función para verificar si el archivo existe en github y eliminarlo si es necesario
 def eliminar_archivo_si_existe(pdf_name):
     headers = {
         'Authorization': f'token {github_token}',
@@ -528,7 +488,7 @@ def eliminar_archivo_si_existe(pdf_name):
             print(f'Error al eliminar el archivo {pdf_name}: {delete_response.content}')
     else:
         print(f'El archivo {pdf_name} no existe en el repositorio.')
-
+# funciones para subir los archivos al epositorio de github
 def subir_archivo_github(pdf_path1, pdf_name1):
     with open(pdf_path1, 'rb') as f:
         pdf_content = f.read()
@@ -555,7 +515,7 @@ def subir_archivo_github(pdf_path1, pdf_name1):
         # Retornar la URL del archivo subido
         download_url = response.json()['content']['download_url']
         download_urls[pdf_name1] = download_url
-        # return download_url  # URL de descarga del archivo
+        return download_url  # URL de descarga del archivo
     except requests.exceptions.HTTPError as e:
         print(f'Error al subir el archivo: {e}')
         return None  # Retornar None en caso de error
@@ -586,10 +546,11 @@ def subir_archivo2_github(pdf_path2, pdf_name2):
         # Retornar la URL del archivo subido
         download_url = response.json()['content']['download_url']
         download_urls[pdf_name2] = download_url
-        # return download_url  # URL de descarga del archivo
+        return download_url  # URL de descarga del archivo
     except requests.exceptions.HTTPError as e:
         print(f'Error al subir el archivo: {e}')
         return None  # Retornar None en caso de error
+    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", default=5000))  # Usa el puerto de Render o 5000 por defecto
     app.run(debug=True,host='0.0.0.0', port=port)
