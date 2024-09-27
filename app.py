@@ -485,11 +485,10 @@ def guardar_patrones_csv(patrones_barrios, patrones_tipos):
 
     return jsonify({"mensaje": "Archivos de patrones guardados y subidos a GitHub exitosamente."})
 # Función para guardar el archivo de resultados y subirlo a GitHub
-def guardar_resultados(resultados):
-    resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
-
+def guardar_resultados(resultados_csv_path):
+    
     # Guardar los resultados en un archivo CSV local
-    resultados.to_csv(resultados_csv_path, index=False)
+    resultados_csv_path.to_csv(resultados_csv_path, index=False)
 
     # Eliminar el archivo si ya existe en el repositorio y luego subir el nuevo
     eliminar_archivo_si_existe('resultados_predicciones.csv')
