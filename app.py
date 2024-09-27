@@ -129,7 +129,22 @@ def guardar_modelos(model_regresion, model_clasificacion, pca, le, columnas):
     joblib.dump(le, os.path.join(base_path, 'modelo_le.pkl'))
     joblib.dump(columnas, os.path.join(base_path, 'columnas.pkl'))
     
-    return jsonify({"mensaje": "Modelo entrenado exitosamente."})
+     # Lista de archivos a subir
+    archivos_modelos = [
+        ('modelo_regresion.pkl', os.path.join(base_path, 'modelo_regresion.pkl')),
+        ('modelo_clasificacion.pkl', os.path.join(base_path, 'modelo_clasificacion.pkl')),
+        ('modelo_pca.pkl', os.path.join(base_path, 'modelo_pca.pkl')),
+        ('modelo_le.pkl', os.path.join(base_path, 'modelo_le.pkl')),
+        ('columnas.pkl', os.path.join(base_path, 'columnas.pkl'))
+
+    ]
+
+    # Iterar sobre los archivos, eliminarlos si existen, y luego subirlos a GitHub
+    for file_name, file_path in archivos_modelos:
+        eliminar_archivo_si_existe(file_name)
+        subir_archivo_github(file_path, file_name)
+
+    return jsonify({"mensaje": "Modelos entrenados y subidos a GitHub exitosamente."})
   
 #se obtienes las predicciones basado a los datos de la clasificacion
 @app.route('/predicciones', methods=['GET'])
