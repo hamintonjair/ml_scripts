@@ -341,47 +341,9 @@ def predicciones():
 
     # Guardar los resultados en un archivo CSV
     resultados_csv_path = os.path.join(base_path, 'resultados_predicciones.csv')
+    guardar_resultados(df,resultados_csv_path)
 
-    df.to_csv(resultados_csv_path, index=False)
-    print(f"Predicciones guardadas en {resultados_csv_path}")
-
-    # Leer el archivo CSV
-    df_resultados = pd.read_csv(resultados_csv_path)
-    # Análisis de patrones por barrio
-    patrones_barrios = df.groupby('barrio').agg({
-        'cantidad': 'sum',                  # Total de incidencias por barrio
-        'cantidad_pred': 'mean',     # Promedio de la predicción de regresión por barrio
-    }).reset_index()
-
-    # Calcular la moda de la predicción de clasificación para cada barrio
-    patrones_barrios['prediccion_clasificacion_mode'] = df.groupby('barrio')['tipo_incidencia_pred'].agg(pd.Series.mode).reset_index(drop=True)
-
-    # Analizar patrones por tipo de incidencia
-    patrones_tipos = df.groupby('tipo_incidencia').agg({
-        'cantidad': 'sum',                  # Total de incidencias por tipo
-        'cantidad_pred': 'mean',     # Promedio de la predicción de regresión por tipo
-    }).reset_index()
-
-    # Calcular la moda de la predicción de clasificación para cada tipo de incidencia
-    patrones_tipos['prediccion_clasificacion_mode'] = df_resultados.groupby('tipo_incidencia')['tipo_incidencia_pred'].agg(pd.Series.mode).reset_index(drop=True)
-
-	# Mostrar los patrones encontrados
-    print("Patrones por barrio:")
-    print(patrones_barrios)
-
-    print("\nPatrones por tipo de incidencia:")
-    print(patrones_tipos)
-
-	# Guardar los resultados en archivos CSV para su posterior análisis
-    patrones_barrios_csv_path = os.path.join(base_path, 'patrones_barrios.csv')
-    patrones_tipos_csv_path = os.path.join(base_path, 'patrones_tipos.csv')
-
-    patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
-    patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
-
-    print(f"\nPatrones por barrio guardados en {patrones_barrios_csv_path}")
-    print(f"Patrones por tipo de incidencia guardados en {patrones_tipos_csv_path}")
-
+   
 	# *****************************************************************************************
 	# Mostrar resultados
     print(df[['cantidad_pred', 'tipo_incidencia_pred']].head())
@@ -455,6 +417,70 @@ def predicciones():
     return jsonify({"mensaje": "Modelo entrenado y PDFs generados y subidos exitosamente.", "datos": datos})
 
     # return jsonify({"mensaje": "Predicción realizada con exito.", "datos": data})
+
+
+# Función para guardar el archivo de resultados y subirlo a GitHub
+def guardar_resultados(df,resultados_csv_path):
+    # Guardar los resultados en un archivo CSV local
+    df.to_csv(resultados_csv_path, index=False)
+
+    # Eliminar el archivo si ya existe en el repositorio y luego subir el nuevo
+    eliminar_archivo_si_existe('resultados_predicciones.csv')
+    subir_archivo_github(resultados_csv_path, 'resultados_predicciones.csv')
+
+    df.to_csv(resultados_csv_path, index=False)
+    print(f"Predicciones guardadas en {resultados_csv_path}")
+
+    # Leer el archivo CSV
+    df_resultados = pd.read_csv(resultados_csv_path)
+    # Análisis de patrones por barrio
+    patrones_barrios = df.groupby('barrio').agg({
+        'cantidad': 'sum',                  # Total de incidencias por barrio
+        'cantidad_pred': 'mean',     # Promedio de la predicción de regresión por barrio
+    }).reset_index()
+
+    # Calcular la moda de la predicción de clasificación para cada barrio
+    patrones_barrios['prediccion_clasificacion_mode'] = df.groupby('barrio')['tipo_incidencia_pred'].agg(pd.Series.mode).reset_index(drop=True)
+
+    # Analizar patrones por tipo de incidencia
+    patrones_tipos = df.groupby('tipo_incidencia').agg({
+        'cantidad': 'sum',                  # Total de incidencias por tipo
+        'cantidad_pred': 'mean',     # Promedio de la predicción de regresión por tipo
+    }).reset_index()
+
+    # Calcular la moda de la predicción de clasificación para cada tipo de incidencia
+    patrones_tipos['prediccion_clasificacion_mode'] = df_resultados.groupby('tipo_incidencia')['tipo_incidencia_pred'].agg(pd.Series.mode).reset_index(drop=True)
+
+	# Mostrar los patrones encontrados
+    print("Patrones por barrio:")
+    print(patrones_barrios)
+
+    print("\nPatrones por tipo de incidencia:")
+    print(patrones_tipos)
+
+	# Guardar los resultados en archivos CSV para su posterior análisis
+    guardar_patrones_csv(patrones_barrios, patrones_tipos)
+    
+    return jsonify({"mensaje": "Archivo de resultados guardado y subido a GitHub exitosamente."})
+
+# Función para guardar los archivos CSV y subirlos a GitHub
+def guardar_patrones_csv(patrones_barrios, patrones_tipos):
+    # Guardar los resultados en archivos CSV para su posterior análisis
+    patrones_barrios_csv_path = os.path.join(base_path, 'patrones_barrios.csv')
+    patrones_tipos_csv_path = os.path.join(base_path, 'patrones_tipos.csv')
+
+    # Guardar los datos en archivos CSV locales
+    patrones_barrios.to_csv(patrones_barrios_csv_path, index=False)
+    patrones_tipos.to_csv(patrones_tipos_csv_path, index=False)
+
+    # Eliminar el archivo si ya existe en el repositorio y luego subir el nuevo
+    eliminar_archivo_si_existe('patrones_barrios.csv')
+    subir_archivo_github(patrones_barrios_csv_path, 'patrones_barrios.csv')
+
+    eliminar_archivo_si_existe('patrones_tipos.csv')
+    subir_archivo_github(patrones_tipos_csv_path, 'patrones_tipos.csv')
+
+    return jsonify({"mensaje": "Archivos de patrones guardados y subidos a GitHub exitosamente."})
 
 # Función para verificar si el archivo existe en github y eliminarlo si es necesario
 def eliminar_archivo_si_existe(pdf_name):
