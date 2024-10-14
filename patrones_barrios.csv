@@ -1,9 +1,0 @@
-barrio,cantidad,cantidad_pred,prediccion_clasificacion_mode
-Buenos aires,121,1.109796946141574,accidente laborales
-Medrano,111,1.109796946141574,['accidente laborales' 'robo/hurto' 'vandalismo']
-Sanvicente,111,1.111805284452627,['accidente laborales' 'robo/hurto' 'vandalismo']
-aurora,1,1.1298803292521031,vandalismo
-entrada a sanvicente,1,1.1298803292521031,vandalismo
-kennedy,1,1.1238553143189445,accidente laborales
-palenque,11,1.1148177919192062,['robo/hurto' 'vandalismo']
-prueba,1,1.0877052247199916,robo/hurto
