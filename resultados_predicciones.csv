@@ -1,0 +1,16 @@
+mes,dia,hora,barrio,tipo_incidencia,nivel_urgencia,cantidad,minutos,hora_unificada,intervalo_hora,es_fin_de_semana,cantidad_pred,tipo_incidencia_pred
+1,28,14,Sanvicente,otro,medio,1,44,1444,12:00-18:00,0,1.075655194853674,robo/hurto
+1,28,14,Medrano,accidente transito,alto,1,46,1446,12:00-18:00,0,1.075655194853674,robo/hurto
+2,4,13,Buenos aires,robo/hurto,bajo,1,22,1322,12:00-18:00,0,1.0816802097868328,robo/hurto
+3,11,17,prueba,vandalismo,bajo,1,8,1708,12:00-18:00,0,1.0877052247199916,robo/hurto
+5,5,10,palenque,robo/hurto,bajo,1,41,1041,06:00-12:00,0,1.0997552545863092,robo/hurto
+9,9,16,Sanvicente,robo/hurto,alto,1,21,1621,12:00-18:00,0,1.1238553143189445,robo/hurto
+9,15,9,Buenos aires,accidente laborales,bajo,2,21,921,06:00-12:00,0,1.1238553143189445,robo/hurto
+9,15,9,Buenos aires,robo/hurto,bajo,1,26,926,06:00-12:00,0,1.1238553143189445,robo/hurto
+9,19,15,Medrano,incendio,alto,1,25,1525,12:00-18:00,0,1.1238553143189445,robo/hurto
+9,24,10,kennedy,desastres,alto,1,19,1019,06:00-12:00,0,1.1238553143189445,robo/hurto
+10,4,17,Medrano,vandalismo,bajo,1,12,1712,12:00-18:00,0,1.1298803292521031,robo/hurto
+10,5,17,palenque,robo/hurto,bajo,1,58,1758,12:00-18:00,0,1.1298803292521031,robo/hurto
+10,10,17,entrada a sanvicente,vandalismo,bajo,1,47,1747,12:00-18:00,0,1.1298803292521031,robo/hurto
+10,14,18,aurora,emergencia,medio,1,38,1838,18:00-24:00,0,1.1298803292521031,robo/hurto
+11,7,19,Sanvicente,robo/hurto,alto,1,23,1923,18:00-24:00,0,1.135905344185262,robo/hurto
